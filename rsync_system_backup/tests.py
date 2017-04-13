@@ -409,7 +409,7 @@ def prepared_image_file(create_filesystem=True):
     execute('dd', 'if=/dev/zero', 'of=%s' % IMAGE_FILE, 'bs=1M', 'count=10')
     execute('dd', 'if=/dev/urandom', 'of=%s' % KEY_FILE, 'bs=512', 'count=4')
     # Encrypt and unlock the image file.
-    execute('cryptsetup', '--batch-mode', 'luksFormat', IMAGE_FILE, KEY_FILE)
+    execute('cryptsetup', '--batch-mode', 'luksFormat', IMAGE_FILE, KEY_FILE, sudo=True)
     # Create a filesystem on the encrypted image file?
     if create_filesystem:
         with unlocked_device(CRYPTO_NAME):
