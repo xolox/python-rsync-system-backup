@@ -18,8 +18,9 @@ export DEBIAN_FRONTEND=noninteractive
 # Update apt-get's package lists.
 sudo -E apt-get update -qq
 
-# Use apt-get to install cryptsetup, mkfs.ext4 and rsync.
-sudo -E apt-get install --yes cryptsetup-bin e2fsprogs rsync
+# Use apt-get to install cryptdisks_start, cryptdisks_stop, cryptsetup,
+# mkfs.ext4 and rsync.
+sudo -E apt-get install --yes cryptsetup cryptsetup-bin e2fsprogs rsync
 
 if [ "$TRAVIS" != true ]; then
   cat >&2 << EOF
