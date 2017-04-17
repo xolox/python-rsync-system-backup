@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 14, 2017
+# Last Change: April 17, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -144,8 +144,7 @@ logger = logging.getLogger(__name__)
 def main():
     """Command line interface for the ``rsync-system-backup`` program."""
     # Initialize logging to the terminal and system log.
-    # coloredlogs.install()
-    coloredlogs.install(syslog='debug')
+    coloredlogs.install(syslog=True)
     # Parse the command line arguments.
     context_opts = dict()
     program_opts = dict()

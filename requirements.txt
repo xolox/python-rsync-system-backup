@@ -1,4 +1,4 @@
-coloredlogs >= 5.0
+coloredlogs >= 6.1
 executor >= 16.0.1
 humanfriendly >= 1.44.5
 proc >= 0.12

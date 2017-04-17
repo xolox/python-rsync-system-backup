@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 14, 2017
+# Last Change: April 17, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -42,7 +42,7 @@ from rsync_system_backup.exceptions import (
 )
 
 # Semi-standard module versioning.
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
