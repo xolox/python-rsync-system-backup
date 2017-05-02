@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 14, 2017
+# Last Change: May 2, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -388,7 +388,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
         os.symlink('../include-me.txt', symlink)
 
     def verify_destination(self, destination):
-        """"Verify the contents of a destination directory."""
+        """Verify the contents of a destination directory."""
         # Make sure the text file was copied to the destination.
         text_file = os.path.join(destination, 'notes.txt')
         assert os.path.isfile(text_file)
