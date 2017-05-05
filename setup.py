@@ -3,7 +3,7 @@
 # Setup script for the `rsync-system-backup' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: March 30, 2017
+# Last Change: May 5, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -85,6 +85,7 @@ setup(name="rsync-system-backup",
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: Implementation :: CPython',
           'Programming Language :: Python :: Implementation :: PyPy',
           'Topic :: Software Development',
