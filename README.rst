@@ -73,11 +73,17 @@ Command line
 
 Use rsync to create full system backups.
 
-The required DESTINATION argument specifies the (possibly remote) location where the backup is stored, in the syntax of rsync's command line interface. The optional SOURCE argument defaults to '/' which means the complete root filesystem will be included in the backup (other filesystems are excluded).
+The required DESTINATION argument specifies the (possibly remote) location
+where the backup is stored, in the syntax of rsync's command line interface.
+The optional SOURCE argument defaults to '/' which means the complete root
+filesystem will be included in the backup (other filesystems are excluded).
 
 Supported locations include:
 
-1. Local disks (possibly encrypted using LUKS). 2. Remote systems that allow SSH connections. 3. Remote systems that are running an rsync daemon. 4. Connections to rsync daemons tunneled over SSH.
+- Local disks (possibly encrypted using LUKS).
+- Remote systems that allow SSH connections.
+- Remote systems that are running an rsync daemon.
+- Connections to rsync daemons tunneled over SSH.
 
 The backup process consists of several steps:
 
@@ -150,8 +156,7 @@ The backup process consists of several steps:
    option."
    "``-v``, ``--verbose``",Make more noise (increase logging verbosity). Can be repeated.
    "``-q``, ``--quiet``",Make less noise (decrease logging verbosity). Can be repeated.
-   "``-h``, ``--help``","Show this message and exit.
-   "
+   "``-h``, ``--help``",Show this message and exit.
 
 .. [[[end]]]
 

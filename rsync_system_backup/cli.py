@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 17, 2017
+# Last Change: May 5, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -16,10 +16,10 @@ filesystem will be included in the backup (other filesystems are excluded).
 
 Supported locations include:
 
-1. Local disks (possibly encrypted using LUKS).
-2. Remote systems that allow SSH connections.
-3. Remote systems that are running an rsync daemon.
-4. Connections to rsync daemons tunneled over SSH.
+- Local disks (possibly encrypted using LUKS).
+- Remote systems that allow SSH connections.
+- Remote systems that are running an rsync daemon.
+- Connections to rsync daemons tunneled over SSH.
 
 The backup process consists of several steps:
 
