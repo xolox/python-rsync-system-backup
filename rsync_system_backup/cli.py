@@ -136,6 +136,7 @@ from humanfriendly.terminal import usage, warning
 
 # Modules included in our package.
 from rsync_system_backup import RsyncSystemBackup
+from rsync_system_backup.exceptions import RsyncSystemBackupError
 
 # Initialize a logger.
 logger = logging.getLogger(__name__)
@@ -204,8 +205,15 @@ def main():
         # Initialize the program with the command line
         # options and execute the requested action(s).
         RsyncSystemBackup(**program_opts).execute()
-    except Exception:
-        logger.exception("Aborting due to fatal exception!")
+    except Exception as e:
+        if isinstance(e, RsyncSystemBackupError):
+            # Known problems shouldn't produce
+            # an intimidating traceback to users.
+            logger.error("Aborting due to error: %s", e)
+        else:
+            # Unhandled exceptions do get a traceback,
+            # because it may help fix programming errors.
+            logger.exception("Aborting due to unhandled exception!")
         sys.exit(1)
 
 
