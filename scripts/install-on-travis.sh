@@ -36,13 +36,13 @@ EOF
   exit 1
 fi
 
-# Modify /etc/fstab.
-sudo tee /etc/fstab >/dev/null << EOF
+# Append our mount point to /etc/fstab.
+sudo tee -a /etc/fstab >/dev/null << EOF
 /dev/mapper/rsync-system-backup /mnt/rsync-system-backup ext4 noauto 0 0
 EOF
 
-# Modify /etc/crypttab.
-sudo tee /etc/crypttab >/dev/null << EOF
+# Append our crypto device to /etc/crypttab.
+sudo tee -a /etc/crypttab >/dev/null << EOF
 rsync-system-backup /tmp/rsync-system-backup.img /tmp/rsync-system-backup.key luks,noauto
 EOF
 
