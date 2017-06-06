@@ -154,6 +154,9 @@ The backup process consists of several steps:
    "``-n``, ``--dry-run``","Don't make any changes, just report what would be done. This doesn't
    create a backup or snapshot but it does run rsync with the ``--dry-run``
    option."
+   ``--disable-notifications``,"By default a desktop notification is shown (using notify-send) before the
+   system backup starts and after the backup finishes. The use of this option
+   disables the notifications (notify-send will not be called at all)."
    "``-v``, ``--verbose``",Make more noise (increase logging verbosity). Can be repeated.
    "``-q``, ``--quiet``",Make less noise (decrease logging verbosity). Can be repeated.
    "``-h``, ``--help``",Show this message and exit.

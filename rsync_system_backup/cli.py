@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 5, 2017
+# Last Change: June 6, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -109,6 +109,12 @@ Supported options:
     create a backup or snapshot but it does run rsync with the --dry-run
     option.
 
+  --disable-notifications
+
+    By default a desktop notification is shown (using notify-send) before the
+    system backup starts and after the backup finishes. The use of this option
+    disables the notifications (notify-send will not be called at all).
+
   -v, --verbose
 
     Make more noise (increase logging verbosity). Can be repeated.
@@ -152,7 +158,8 @@ def main():
     try:
         options, arguments = getopt.getopt(sys.argv[1:], 'bsrm:c:i:unvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'ionice=',
-            'no-sudo', 'dry-run', 'verbose', 'quiet', 'help',
+            'no-sudo', 'dry-run', 'disable-notifications', 'verbose', 'quiet',
+            'help',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -174,6 +181,8 @@ def main():
             elif option in ('-n', '--dry-run'):
                 logger.info("Performing a dry run (because of %s option) ..", option)
                 program_opts['dry_run'] = True
+            elif option == '--disable-notifications':
+                program_opts['notifications_enabled'] = False
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):

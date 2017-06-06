@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 2, 2017
+# Last Change: June 6, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -198,6 +198,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
             # Run the program through the command line interface.
             exit_code, output = run_cli(
                 '--no-sudo', '--ionice=idle',
+                '--disable-notifications',
                 source, latest_directory,
             )
             assert exit_code == 0
@@ -238,6 +239,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
             # Run the program through the command line interface.
             exit_code, output = run_cli(
                 '--backup', '--no-sudo',
+                '--disable-notifications',
                 source, latest_directory,
             )
             assert exit_code == 0
@@ -320,6 +322,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
         exit_code, output = run_cli(
             '--crypto=%s' % CRYPTO_NAME,
             '--mount=%s' % MOUNT_POINT,
+            '--disable-notifications',
             # We skip snapshot creation and rotation to minimize the number
             # of commands required in /etc/sudoers.d/rsync-system-backup.
             '--backup',
