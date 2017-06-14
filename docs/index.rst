@@ -1,34 +1,25 @@
-.. include:: ../README.rst
+rsync-system-backup: Linux system backups powered by rsync
+==========================================================
 
-API documentation
-=================
-
-This documentation is based on the source code of version |release| of the
-`rsync-system-backup` package. The following modules are available:
+Welcome to the documentation of `rsync-system-backup` version |release|!
 
 .. contents::
    :local:
 
-:mod:`rsync_system_backup`
---------------------------
+User documentation
+------------------
 
-.. automodule:: rsync_system_backup
-   :members:
+The readme explains the high level concepts and is mostly targeted at users of
+the command line interface. It's probably the best place to start reading:
 
-:mod:`rsync_system_backup.cli`
-------------------------------
+.. toctree::
+   users.rst
 
-.. automodule:: rsync_system_backup.cli
-   :members:
+API documentation
+-----------------
 
-:mod:`rsync_system_backup.destinations`
----------------------------------------
+The following documentation is targeted at people who are interested in using
+the Python API:
 
-.. automodule:: rsync_system_backup.destinations
-   :members:
-
-:mod:`rsync_system_backup.exceptions`
--------------------------------------
-
-.. automodule:: rsync_system_backup.exceptions
-   :members:
+.. toctree::
+   developers.rst
