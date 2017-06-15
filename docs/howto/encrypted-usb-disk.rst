@@ -257,8 +257,8 @@ Install rsync-system-backup
 
 There are several ways to install `rsync-system-backup`, for example::
 
- # Make sure pip (the Python package manager) is installed.
- sudo apt-get install python-pip
+ # Make sure pip (the Python package manager) and related packages are installed.
+ sudo apt-get install python-{pip,pkg-resources,setuptools}
 
  # Use pip to install the Python package we need in /usr/local. The
  # executable will be available at /usr/local/bin/rsync-system-backup.
