@@ -15,6 +15,12 @@ the command line interface. It's probably the best place to start reading:
 .. toctree::
    users.rst
 
+The following instructions are also intended for users of the command line
+interface but are too detailed to be included in the readme:
+
+.. toctree::
+   howto/encrypted-usb-disk.rst
+
 API documentation
 -----------------
 
