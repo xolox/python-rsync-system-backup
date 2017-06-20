@@ -60,11 +60,40 @@ of the disk, so you need to make sure of two things:
    sudo cryptsetup luksFormat /dev/sdx /root/keys/backups.key
 
 In the command above ``/dev/sdx`` is the device file (this is what you need to
-change) and ``/root/keys/backups.key`` is the name of the key file that we
-created in the previous step.
+change, see `figuring out the correct device file`_ for hints) and
+``/root/keys/backups.key`` is the name of the key file that we created in the
+previous step.
 
-.. note:: Careful readers will notice that I'm not bothering to create
-          a partition table on the USB disk. We don't need it :-).
+Careful readers will notice that I'm not bothering to create a partition table
+on the USB disk, that's because we don't need it :-).
+
+Make sure the disk is not in use
+++++++++++++++++++++++++++++++++
+
+The ``luksFormat`` command above may give you an error like::
+
+ Cannot format device /dev/sdx which is still in use
+
+If this happens then most likely the USB disk that you attached already has a
+filesystem on it and your desktop environment automatically mounted that
+filesystem. You will need to unmount that filesystem before you can enable
+encryption on the disk. If you don't know how to do that:
+
+1. Follow the steps in the section `figuring out the correct device file`_ and
+   take note of the device file corresponding to the USB disk.
+2. Run the ``mount`` command to get a list of mounted filesystems and look for
+   lines that mention the relevant device file. Most likely a number will be
+   appended at the end of the device file (this indicates a partition on the
+   USB disk).
+3. For each of the relevant entries in the ``mount`` output, run the following
+   command::
+
+    sudo umount /dev/sdx1
+
+   In the command above ``/dev/sdx1`` is the device file of a partition on the
+   USB disk (this is what you need to change).
+
+.. _figuring out the correct device file:
 
 Figuring out the correct device file
 ++++++++++++++++++++++++++++++++++++
@@ -95,8 +124,8 @@ the key file required to unlock your encrypted backups, which would be rather
 ironic but not in a fun way :-P. To avoid this situation we can configure the
 disk encryption with a recovery password::
 
-   # Configure a recovery password.
-   sudo cryptsetup --key-file=/root/keys/backups.key luksAddKey /dev/sdx
+ # Configure a recovery password.
+ sudo cryptsetup --key-file=/root/keys/backups.key luksAddKey /dev/sdx
 
 In the command above ``/dev/sdx`` is the device file, this should be the same
 device file you used in the previous step.
