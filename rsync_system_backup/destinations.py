@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 14, 2017
+# Last Change: June 20, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Parsing of rsync destination syntax (and then some)."""
@@ -28,7 +28,11 @@ from rsync_system_backup.exceptions import (
 )
 
 RSYNCD_PORT = 873
-"""The default port of the rsync daemon (an integer)."""
+"""
+The default port of the `rsync daemon`_ (an integer).
+
+.. _rsync daemon: https://manpages.debian.org/rsyncd.conf
+"""
 
 # A compiled regular expression pattern to parse local destinations,
 # used as a fall back because it matches any nonempty string.
@@ -141,7 +145,7 @@ class Destination(PropertyManager):
 
     @mutable_property
     def module(self):
-        """The name of a module exported by an rsync daemon (a string)."""
+        """The name of a module exported by an `rsync daemon`_ (a string)."""
         return ''
 
     @mutable_property
@@ -163,7 +167,7 @@ class Destination(PropertyManager):
 
     @mutable_property
     def port_number(self):
-        """The port number of a remote rsync daemon (a number, defaults to :data:`RSYNCD_PORT`)."""
+        """The port number of a remote `rsync daemon`_ (a number, defaults to :data:`RSYNCD_PORT`)."""
         return RSYNCD_PORT
 
     @port_number.setter
@@ -194,7 +198,7 @@ class Destination(PropertyManager):
 class ForwardedDestination(Destination, RemoteCommand, EphemeralTCPServer):
 
     """
-    The :class:`ForwardedDestination` class represents a tunneled rsync daemon connection over SSH.
+    The :class:`ForwardedDestination` class represents a tunneled `rsync daemon`_ connection over SSH.
 
     This class is a somewhat awkward composition of three base classes:
 
@@ -254,5 +258,5 @@ class ForwardedDestination(Destination, RemoteCommand, EphemeralTCPServer):
 
     @mutable_property
     def remote_port(self):
-        """The TCP port that the rsync daemon is listening on (an integer, defaults to :data:`RSYNCD_PORT`)."""
+        """The TCP port that the `rsync daemon`_ is listening on (an integer, defaults to :data:`RSYNCD_PORT`)."""
         return RSYNCD_PORT
