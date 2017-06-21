@@ -45,7 +45,7 @@ from rsync_system_backup.exceptions import (
 )
 
 # Semi-standard module versioning.
-__version__ = '0.4'
+__version__ = '0.5'
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
