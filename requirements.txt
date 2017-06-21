@@ -1,7 +1,7 @@
 coloredlogs >= 6.1
-executor >= 16.0.1
+executor >= 17.1
 humanfriendly >= 3.1
-linux-utils >= 0.1
+linux-utils >= 0.3
 proc >= 0.12
 property-manager >= 2.0
 rotate-backups >= 4.4

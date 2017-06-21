@@ -22,6 +22,7 @@ from executor import quote
 from executor.contexts import LocalContext, create_context
 from humanfriendly import Timer, compact, concatenate
 from linux_utils.crypttab import parse_crypttab
+from linux_utils.luks import cryptdisks_start, cryptdisks_stop
 from proc.notify import notify_desktop
 from property_manager import (
     PropertyManager,
@@ -376,36 +377,38 @@ class RsyncSystemBackup(PropertyManager):
                  - :exc:`~executor.ExternalCommandFailed` when the
                    cryptdisks_start_ command reports an error.
 
-        When :attr:`crypto_device` is set this method uses cryptdisks_start_ to
-        unlock the encrypted filesystem to which backups are written before the
-        backup starts. When cryptdisks_start_ was called before the backup
-        started, cryptdisks_stop_ will be called when the backup finishes.
+        When :attr:`crypto_device` is set this method uses
+        :func:`~linux_utils.luks.cryptdisks_start()` to unlock the encrypted
+        filesystem to which backups are written before the backup starts. When
+        :func:`~linux_utils.luks.cryptdisks_start()` was called before the
+        backup started, :func:`~linux_utils.luks.cryptdisks_stop()` will be
+        called when the backup finishes.
 
-        To enable the use of cryptdisks_start_ and cryptdisks_stop_ you need to
-        create an `/etc/crypttab`_ entry that maps your physical device to a
-        symbolic name. If you want this process to run fully unattended you can
+        To enable the use of :func:`~linux_utils.luks.cryptdisks_start()` and
+        :func:`~linux_utils.luks.cryptdisks_stop()` you need to create an
+        `/etc/crypttab`_ entry that maps your physical device to a symbolic
+        name. If you want this process to run fully unattended you can
         configure a key file in `/etc/crypttab`_, otherwise you will be asked
         for the password when the encrypted filesystem is unlocked.
 
-        .. _cryptdisks_start: https://manpages.debian.org/cryptdisks_start
-        .. _cryptdisks_stop: https://manpages.debian.org/cryptdisks_stop
         .. _/etc/crypttab: https://manpages.debian.org/crypttab
+        .. _cryptdisks_start: https://manpages.debian.org/cryptdisks_start
         """
         if self.crypto_device:
             if self.crypto_device_unlocked:
                 logger.info("Encrypted filesystem is already unlocked (%s) ..", self.crypto_device)
             else:
-                logger.info("Unlocking encrypted filesystem (%s) ..", self.crypto_device)
-                self.destination_context.execute(
-                    'cryptdisks_start', self.crypto_device,
-                    sudo=True, tty=True,
+                cryptdisks_start(
+                    context=self.destination_context,
+                    target=self.crypto_device,
                 )
                 if not self.crypto_device_unlocked:
                     msg = "Failed to unlock encrypted filesystem! (%s)"
                     raise FailedToUnlockError(msg % self.crypto_device)
                 self.destination_context.cleanup(
-                    'cryptdisks_stop', self.crypto_device,
-                    sudo=True, tty=True,
+                    cryptdisks_stop,
+                    context=self.destination_context,
+                    target=self.crypto_device,
                 )
 
     def mount_filesystem(self):

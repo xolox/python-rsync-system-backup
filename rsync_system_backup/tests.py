@@ -19,6 +19,13 @@ import unittest
 import coloredlogs
 from executor import ExternalCommandFailed, execute, get_search_path, which
 from humanfriendly import Timer, compact
+from linux_utils.luks import (
+    create_encrypted_filesystem,
+    create_image_file,
+    cryptdisks_start,
+    cryptdisks_stop,
+    TemporaryKeyFile,
+)
 from rotate_backups import RotateBackups
 from six.moves import StringIO
 
@@ -402,26 +409,23 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
 @contextlib.contextmanager
 def prepared_image_file(create_filesystem=True):
     """Prepare an image file containing an encrypted filesystem (ext4 on top of LUKS)."""
-    # Create a 10 MB image file and a key file of 2048 bytes.
-    execute('dd', 'if=/dev/zero', 'of=%s' % IMAGE_FILE, 'bs=1M', 'count=10')
-    execute('dd', 'if=/dev/urandom', 'of=%s' % KEY_FILE, 'bs=512', 'count=4')
-    # Encrypt and unlock the image file.
-    execute('cryptsetup', '--batch-mode', 'luksFormat', IMAGE_FILE, KEY_FILE, sudo=True)
-    # Create a filesystem on the encrypted image file?
-    if create_filesystem:
-        with unlocked_device(CRYPTO_NAME):
-            execute('mkfs.ext4', FILESYSTEM_DEVICE, sudo=True)
-    yield
-    os.unlink(IMAGE_FILE)
-    os.unlink(KEY_FILE)
+    with TemporaryKeyFile(filename=KEY_FILE):
+        create_image_file(filename=IMAGE_FILE, size='10M')
+        create_encrypted_filesystem(device_file=IMAGE_FILE, key_file=KEY_FILE)
+        # Create a filesystem on the encrypted image file?
+        if create_filesystem:
+            with unlocked_device(CRYPTO_NAME):
+                execute('mkfs.ext4', FILESYSTEM_DEVICE, sudo=True)
+        yield
+        os.unlink(IMAGE_FILE)
 
 
 @contextlib.contextmanager
 def unlocked_device(crypto_device):
     """Context manager that runs ``cryptdisks_start`` and ``cryptdisks_stop``."""
-    execute('cryptdisks_start', crypto_device, sudo=True)
+    cryptdisks_start(target=crypto_device)
     yield
-    execute('cryptdisks_stop', crypto_device, sudo=True)
+    cryptdisks_stop(target=crypto_device)
 
 
 @contextlib.contextmanager
