@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 21, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -21,6 +21,7 @@ import time
 from executor import quote
 from executor.contexts import LocalContext, create_context
 from humanfriendly import Timer, compact, concatenate
+from linux_utils.crypttab import parse_crypttab
 from proc.notify import notify_desktop
 from property_manager import (
     PropertyManager,
@@ -84,16 +85,46 @@ class RsyncSystemBackup(PropertyManager):
         """The name of the encrypted filesystem to use (a string or :data:`None`)."""
 
     @property
+    def crypto_device_available(self):
+        """
+        :data:`True` if the encrypted filesystem is available, :data:`False` otherwise.
+
+        This property is an alias for the
+        :attr:`~linux_utils.crypttab.EncryptedFileSystemEntry.is_available`
+        property of :attr:`crypttab_entry`.
+        """
+        return self.crypttab_entry.is_available if self.crypttab_entry else False
+
+    @property
     def crypto_device_unlocked(self):
         """
         :data:`True` if the encrypted filesystem is unlocked, :data:`False` otherwise.
 
-        The value of this property is computed each time it is accessed. It
-        checks whether ``/dev/mapper`` contains an entry that matches the name
-        configured with :attr:`crypto_device`.
+        This property is an alias for the
+        :attr:`~linux_utils.crypttab.EncryptedFileSystemEntry.is_unlocked`
+        property of :attr:`crypttab_entry`.
         """
-        return (self.destination_context.exists(os.path.join('/dev/mapper', self.crypto_device))
-                if self.crypto_device else False)
+        return self.crypttab_entry.is_unlocked if self.crypttab_entry else False
+
+    @cached_property
+    def crypttab_entry(self):
+        """
+        The entry in ``/etc/crypttab`` corresponding to :attr:`crypto_device`.
+
+        The value of this property is computed automatically by parsing
+        ``/etc/crypttab`` and looking for an entry whose `target` (the
+        first of the four fields) matches :attr:`crypto_device`.
+
+        When an entry is found an
+        :class:`~linux_utils.crypttab.EncryptedFileSystemEntry` object is
+        constructed, otherwise the result is :data:`None`.
+        """
+        if self.crypto_device:
+            logger.debug("Parsing /etc/crypttab to determine device file of encrypted filesystem %r ..",
+                         self.crypto_device)
+            for entry in parse_crypttab(context=self.destination_context):
+                if entry.target == self.crypto_device:
+                    return entry
 
     @required_property
     def destination(self):

@@ -65,6 +65,7 @@ pygments_style = 'sphinx'
 intersphinx_mapping = {
     'python': ('https://docs.python.org/2', None),
     'executor': ('https://executor.readthedocs.io/en/latest/', None),
+    'linuxutils': ('https://linux-utils.readthedocs.io/en/latest/', None),
     'propertymanager': ('https://property-manager.readthedocs.io/en/latest/', None),
     'rotatebackups': ('https://rotate-backups.readthedocs.io/en/latest/', None),
 }
