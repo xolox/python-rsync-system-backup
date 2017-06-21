@@ -138,7 +138,9 @@ The backup process consists of several steps:
    when the backup finishes.
    
    An entry for the encrypted filesystem needs to be defined in /etc/crypttab
-   for this to work.
+   for this to work. If the device of the encrypted filesystem is missing and
+   rsync-system-backup is being run non-interactively, it will exit gracefully
+   and not show any desktop notifications.
    
    If you want the backup process to run fully unattended you can configure a
    key file in /etc/crypttab, otherwise you will be asked for the password
