@@ -40,6 +40,7 @@ from rsync_system_backup.exceptions import (
     DestinationContextUnavailable,
     FailedToMountError,
     FailedToUnlockError,
+    MissingBackupDiskError,
 )
 
 # Semi-standard module versioning.
@@ -65,8 +66,9 @@ class RsyncSystemBackup(PropertyManager):
     :attr:`rotation_scheme`, :attr:`snapshot_enabled`, :attr:`source`,
     :attr:`source_context` and :attr:`sudo_enabled`.
 
-    The values of :attr:`crypto_device_unlocked`, :attr:`destination_context`
-    and :attr:`mount_point_active` are computed based on the mutable properties
+    The values of :attr:`crypto_device_available`,
+    :attr:`crypto_device_unlocked`, :attr:`destination_context` and
+    :attr:`mount_point_active` are computed based on the mutable properties
     mentioned above.
 
     The :func:`execute()` method is the main entry point. If you're looking for
@@ -319,6 +321,9 @@ class RsyncSystemBackup(PropertyManager):
         """Helper for :func:`execute()`."""
         timer = Timer()
         actions = []
+        if self.crypto_device and not self.crypto_device_available:
+            msg = "Encrypted filesystem %s isn't available! (the device file %s doesn't exist)"
+            raise MissingBackupDiskError(msg % (self.crypto_device, self.crypttab_entry.source_device))
         if self.backup_enabled:
             self.notify_starting()
         self.unlock_device()

@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 21, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -83,7 +83,9 @@ Supported options:
     when the backup finishes.
 
     An entry for the encrypted filesystem needs to be defined in /etc/crypttab
-    for this to work.
+    for this to work. If the device of the encrypted filesystem is missing and
+    rsync-system-backup is being run non-interactively, it will exit gracefully
+    and not show any desktop notifications.
 
     If you want the backup process to run fully unattended you can configure a
     key file in /etc/crypttab, otherwise you will be asked for the password
@@ -138,11 +140,11 @@ import sys
 import coloredlogs
 from executor import validate_ionice_class
 from executor.contexts import create_context
-from humanfriendly.terminal import usage, warning
+from humanfriendly.terminal import connected_to_terminal, usage, warning
 
 # Modules included in our package.
 from rsync_system_backup import RsyncSystemBackup
-from rsync_system_backup.exceptions import RsyncSystemBackupError
+from rsync_system_backup.exceptions import MissingBackupDiskError, RsyncSystemBackupError
 
 # Initialize a logger.
 logger = logging.getLogger(__name__)
@@ -216,6 +218,15 @@ def main():
         RsyncSystemBackup(**program_opts).execute()
     except Exception as e:
         if isinstance(e, RsyncSystemBackupError):
+            # Special handling when the backup disk isn't available.
+            if isinstance(e, MissingBackupDiskError):
+                # Check if we're connected to a terminal to decide whether the
+                # error should be propagated or silenced, the idea being that
+                # rsync-system-backup should keep quiet when it's being run
+                # from cron and the backup disk isn't available.
+                if not connected_to_terminal():
+                    logger.info("Skipping backup: %s", e)
+                    sys.exit(0)
             # Known problems shouldn't produce
             # an intimidating traceback to users.
             logger.error("Aborting due to error: %s", e)

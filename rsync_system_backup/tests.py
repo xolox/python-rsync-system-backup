@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 6, 2017
+# Last Change: June 21, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -29,8 +29,8 @@ from rsync_system_backup.destinations import Destination
 from rsync_system_backup.exceptions import (
     DestinationContextUnavailable,
     FailedToMountError,
-    FailedToUnlockError,
     InvalidDestinationError,
+    MissingBackupDiskError,
 )
 
 # Initialize a logger for this module.
@@ -330,8 +330,8 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
         )
         assert exit_code == 0
 
-    def test_unlock_failure(self):
-        """Test that FailedToUnlockError is raised as expected."""
+    def test_missing_crypto_device(self):
+        """Test that MissingBackupDiskError is raised as expected."""
         # Make sure the image file doesn't exist.
         if os.path.exists(IMAGE_FILE):
             os.unlink(IMAGE_FILE)
@@ -343,13 +343,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
             destination=os.path.join(MOUNT_POINT, 'latest'),
             mount_point=MOUNT_POINT,
         )
-        # When `cryptdisks_start' fails it should exit with a nonzero exit
-        # code, thereby causing executor to raise an ExternalCommandFailed
-        # exception that obscures the FailedToUnlockError exception that we're
-        # interested in. The check=False option enables our `last resort error
-        # handling' code path to be reached.
-        program.destination_context.options['check'] = False
-        self.assertRaises(FailedToUnlockError, program.execute)
+        self.assertRaises(MissingBackupDiskError, program.execute)
 
     def test_mount_failure(self):
         """Test that FailedToMountError is raised as expected."""

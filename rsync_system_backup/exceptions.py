@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 13, 2017
+# Last Change: June 21, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Custom exceptions used by rsync-system-backup."""
@@ -15,6 +15,11 @@ class RsyncSystemBackupError(Exception):
 class InvalidDestinationError(RsyncSystemBackupError):
 
     """Raised when the given destination expression can't be parsed."""
+
+
+class MissingBackupDiskError(RsyncSystemBackupError):
+
+    """Raised when the encrypted filesystem isn't available."""
 
 
 class FailedToUnlockError(RsyncSystemBackupError):

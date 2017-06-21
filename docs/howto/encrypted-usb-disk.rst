@@ -346,6 +346,11 @@ Depending on how you installed `rsync-system-backup` you may need to adjust the
 Silencing desktop notifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+When `rsync-system-backup` is running non-interactively and it finds that the
+device of the encrypted filesystem is missing, it will exit gracefully and not
+show any desktop notifications. This is intended to avoid noise when the backup
+disk isn't connected.
+
 If the desktop notifications announcing the start and completion of a system
 backup drive you bonkers, add the ``--disable-notifications`` option to the
-`rsync-system-backup` command line.
+`rsync-system-backup` command line to silence desktop notifications.
