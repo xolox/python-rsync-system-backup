@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 21, 2017
+# Last Change: June 23, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Custom exceptions used by rsync-system-backup."""
@@ -40,3 +40,8 @@ class DestinationContextUnavailable(RsyncSystemBackupError):
 class ParentDirectoryUnavailable(RsyncSystemBackupError):
 
     """Raised when the parent directory of the backup directory cannot be determined."""
+
+
+class InvalidDestinationDirectory(RsyncSystemBackupError):
+
+    """Raised when the backup directory isn't located inside the given mount point."""

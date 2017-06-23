@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 21, 2017
+# Last Change: June 23, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -36,6 +36,7 @@ from rsync_system_backup.destinations import Destination
 from rsync_system_backup.exceptions import (
     DestinationContextUnavailable,
     FailedToMountError,
+    InvalidDestinationDirectory,
     InvalidDestinationError,
     MissingBackupDiskError,
 )
@@ -339,6 +340,8 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
 
     def test_missing_crypto_device(self):
         """Test that MissingBackupDiskError is raised as expected."""
+        if not os.path.isdir(MOUNT_POINT):
+            return self.skipTest("Skipping test because %s doesn't exist!", MOUNT_POINT)
         # Make sure the image file doesn't exist.
         if os.path.exists(IMAGE_FILE):
             os.unlink(IMAGE_FILE)
@@ -354,6 +357,8 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
 
     def test_mount_failure(self):
         """Test that FailedToMountError is raised as expected."""
+        if not os.path.isdir(MOUNT_POINT):
+            return self.skipTest("Skipping test because %s doesn't exist!", MOUNT_POINT)
         with prepared_image_file(create_filesystem=False):
             program = RsyncSystemBackup(
                 crypto_device=CRYPTO_NAME,
@@ -367,6 +372,18 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
             # `last resort error handling' code path to be reached.
             program.destination_context.options['check'] = False
             self.assertRaises(FailedToMountError, program.execute)
+
+    def test_invalid_destination_directory(self):
+        """Test that InvalidDestinationDirectory is raised as expected."""
+        if not os.path.isdir(MOUNT_POINT):
+            return self.skipTest("Skipping test because %s doesn't exist!", MOUNT_POINT)
+        with prepared_image_file():
+            program = RsyncSystemBackup(
+                crypto_device=CRYPTO_NAME,
+                destination='/some/random/directory',
+                mount_point=MOUNT_POINT,
+            )
+            self.assertRaises(InvalidDestinationDirectory, program.transfer_changes)
 
     def test_backup_failure(self):
         """Test that an exception is raised when ``rsync`` fails."""

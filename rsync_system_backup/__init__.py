@@ -41,6 +41,7 @@ from rsync_system_backup.exceptions import (
     DestinationContextUnavailable,
     FailedToMountError,
     FailedToUnlockError,
+    InvalidDestinationDirectory,
     MissingBackupDiskError,
 )
 
@@ -444,7 +445,22 @@ class RsyncSystemBackup(PropertyManager):
                 self.destination_context.cleanup('umount', self.mount_point, sudo=True)
 
     def transfer_changes(self):
-        """Use rsync to synchronize the files on the local system to the backup destination."""
+        """
+        Use rsync to synchronize the files on the local system to the backup destination.
+
+        :raises: :exc:`.InvalidDestinationDirectory` when :attr:`mount_point`
+                 is set and :attr:`destination` is a local directory that is
+                 not located under :attr:`mount_point`.
+        """
+        # Attempt to ensure that the destination directory is located under the
+        # mount point to prevent the user from shooting themselves in the foot.
+        if self.mount_point and not self.destination.hostname:
+            mount_point = os.path.abspath(self.mount_point)
+            destination = os.path.abspath(self.destination.directory)
+            common_prefix = os.path.commonprefix([mount_point, destination])
+            if os.path.abspath(common_prefix) != mount_point:
+                msg = "Destination directory (%s) not located under mount point (%s)!"
+                raise InvalidDestinationDirectory(msg % (destination, mount_point))
         # The following `with' statement enables rsync daemon connections
         # tunneled over SSH. For this use case we spawn a local SSH client with
         # port forwarding configured, wait for the forwarded port to become
