@@ -2,13 +2,43 @@ How to set up unattended backups to an encrypted USB disk
 =========================================================
 
 This document explains how to set up unattended Linux system backups to an
-encrypted USB disk using LUKS filesystem encryption. These instructions are
-tested on Ubuntu (to be more specific I've used this process on 12.04, 14.04
-and 16.04) but I'd expect them to work just as well on Debian and Linux
+encrypted USB disk using LUKS_ filesystem encryption. These instructions are
+tested on Ubuntu_ (to be more specific I've used this process on 12.04, 14.04
+and 16.04) but I'd expect them to work just as well on Debian_ and Linux
 distributions based on Debian.
+
+Most of the steps in this how-to should in fact work fine on any Linux system
+(maybe with minor adjustments here and there) however there is one important
+thing to note: the configuration file `/etc/crypttab`_ and the commands
+cryptdisks_start_ and cryptdisks_stop_ are a Debian-ism that may not be
+available on other Linux distributions. The relevant sections explain
+how to tackle this (long story short: I wrote a fallback).
 
 .. contents::
    :local:
+
+Install rsync-system-backup
+---------------------------
+
+There are several ways to install `rsync-system-backup`, for example::
+
+ # Make sure pip (the Python package manager) and related packages are installed.
+ sudo apt-get install python-{pip,pkg-resources,setuptools}
+
+ # Use pip to install the Python package we need in /usr/local. The
+ # executable will be available at /usr/local/bin/rsync-system-backup.
+ sudo pip install --upgrade rsync-system-backup
+
+You can can also install the Python package and its dependencies in your home
+directory if you prefer that over "polluting" the system wide /usr/local
+directory::
+
+ # Use pip to install the Python package we need in ~/.local. The
+ # executable will be available at ~/.local/bin/rsync-system-backup.
+ pip install --upgrade --user rsync-system-backup
+
+If that is still "too global" for your tastes then feel free to set up a
+Python virtual environment ;-).
 
 Prepare the disk encryption
 ---------------------------
@@ -165,9 +195,35 @@ Unlock the encrypted disk
 Thanks to the ``/etc/crypttab`` entry that we added in the previous step,
 unlocking the disk is very simple::
 
+ # Unlock the encrypted backups disk.
  sudo cryptdisks_start backups
 
-This won't ask for a password because we configured a key file.
+This won't ask for a password because we configured a key file. If you get a
+"command not found" error then here are two suggestions:
+
+1. If you're running a Linux distribution based on Debian_ (like Ubuntu_) then
+   you can install cryptdisks_start_ and cryptdisks_stop_ as follows::
+
+    # Make sure `cryptdisks_start' and `cryptdisks_stop' are installed.
+    sudo apt-get install cryptsetup
+
+2. If you're running a Linux distribution that's not based on Debian_ then the
+   cryptdisks_start_ and cryptdisks_stop_ programs may not be available to you.
+   Don't worry though, I've got your back! ;-)
+
+   Because we've already installed `rsync-system-backup` its dependencies are
+   also available. One of these dependencies installs the following two command
+   line programs:
+
+   - ``cryptdisks-start-fallback``
+   - ``cryptdisks-stop-fallback``
+
+   These programs are not as full featured as their "official" counterparts but
+   they should work fine for the purposes of this how-to. Instead of the
+   command given at the start of this section, please use the following
+   command::
+
+    sudo cryptdisks-start-fallback backups
 
 Prepare the encrypted filesystem
 --------------------------------
@@ -281,29 +337,6 @@ backups, but you get the idea :-).
 
 Whether you use the same directory layout or something simpler is up to you.
 
-Install rsync-system-backup
----------------------------
-
-There are several ways to install `rsync-system-backup`, for example::
-
- # Make sure pip (the Python package manager) and related packages are installed.
- sudo apt-get install python-{pip,pkg-resources,setuptools}
-
- # Use pip to install the Python package we need in /usr/local. The
- # executable will be available at /usr/local/bin/rsync-system-backup.
- sudo pip install --upgrade rsync-system-backup
-
-You can can also install the Python package and its dependencies in your home
-directory if you prefer that over "polluting" the system wide /usr/local
-directory::
-
- # Use pip to install the Python package we need in ~/.local. The
- # executable will be available at ~/.local/bin/rsync-system-backup.
- pip install --upgrade --user rsync-system-backup
-
-If that is still "too global" for your tastes then feel free to set up a
-Python virtual environment ;-).
-
 Create your first backup
 ------------------------
 
@@ -354,3 +387,13 @@ disk isn't connected.
 If the desktop notifications announcing the start and completion of a system
 backup drive you bonkers, add the ``--disable-notifications`` option to the
 `rsync-system-backup` command line to silence desktop notifications.
+
+
+.. External references:
+
+.. _/etc/crypttab: https://manpages.debian.org/crypttab
+.. _cryptdisks_start: https://manpages.debian.org/cryptdisks_start
+.. _cryptdisks_stop: https://manpages.debian.org/cryptdisks_stop
+.. _Debian: https://en.wikipedia.org/wiki/Debian
+.. _LUKS: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
+.. _Ubuntu: https://en.wikipedia.org/wiki/Ubuntu_(operating_system)
