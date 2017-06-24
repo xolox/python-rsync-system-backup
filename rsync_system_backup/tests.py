@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 23, 2017
+# Last Change: June 24, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -10,15 +10,12 @@
 import contextlib
 import logging
 import os
-import shutil
 import sys
-import tempfile
-import unittest
 
 # External dependencies.
-import coloredlogs
-from executor import ExternalCommandFailed, execute, get_search_path, which
-from humanfriendly import Timer, compact
+from executor import ExternalCommandFailed, execute
+from humanfriendly import Timer
+from humanfriendly.testing import MockedProgram, TemporaryDirectory, TestCase
 from linux_utils.luks import (
     create_encrypted_filesystem,
     create_image_file,
@@ -51,56 +48,10 @@ IMAGE_FILE = '/tmp/rsync-system-backup.img'
 KEY_FILE = '/tmp/rsync-system-backup.key'
 MOUNT_POINT = '/mnt/rsync-system-backup'
 
-# Global runtime state.
-TEMPORARY_DIRECTORIES = []
 
-
-def setUpModule():
-    """Create a fake ``notify-send`` program that will keep silent."""
-    # Create a temporary directory where we can create a fake notify-send
-    # program that is guaranteed to exist and will run successfully, but
-    # without actually bothering the user with interactive notifications.
-    directory = tempfile.mkdtemp(prefix='rsync-system-backup-', suffix='-fake-path')
-    TEMPORARY_DIRECTORIES.append(directory)
-    fake_program = os.path.join(directory, 'notify-send')
-    candidates = which('true')
-    os.symlink(candidates[0], fake_program)
-    # Add the directory to the $PATH.
-    path = get_search_path()
-    path.insert(0, directory)
-    os.environ['PATH'] = os.pathsep.join(path)
-
-
-def tearDownModule():
-    """Clean temporary directories created by the test suite."""
-    while TEMPORARY_DIRECTORIES:
-        directory = TEMPORARY_DIRECTORIES.pop(0)
-        shutil.rmtree(directory)
-
-
-class RsyncSystemBackupsTestCase(unittest.TestCase):
+class RsyncSystemBackupsTestCase(TestCase):
 
     """:mod:`unittest` compatible container for `rsync-system-backup` tests."""
-
-    def setUp(self):
-        """Enable verbose logging and reset it after each test."""
-        coloredlogs.install(level='DEBUG')
-
-    def skipTest(self, text, *args, **kw):
-        """
-        Enable backwards compatible "marking of tests to skip".
-
-        By calling this method from a return statement in the test to be
-        skipped the test can be marked as skipped when possible, without
-        breaking the test suite when unittest.TestCase.skipTest() isn't
-        available.
-        """
-        reason = compact(text, *args, **kw)
-        try:
-            super(RsyncSystemBackupsTestCase, self).skipTest(reason)
-        except AttributeError:
-            # unittest.TestCase.skipTest() isn't available in Python 2.6.
-            logger.warning("%s", reason)
 
     def test_usage(self):
         """Test the usage message."""
@@ -186,14 +137,18 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
 
     def test_notifications(self):
         """Test the desktop notification functionality."""
+        timer = Timer()
         program = RsyncSystemBackup(destination='/backups/system')
-        # Right now we just make sure the Python code doesn't contain any silly
-        # mistakes. It would be nice to have a more thorough test though, e.g.
-        # make sure that `notify-send' is called and make sure that we don't
-        # fail when `notify-send' does fail.
-        program.notify_starting()
-        program.notify_finished(Timer())
-        program.notify_failed(Timer())
+        # The happy path.
+        with MockedProgram('notify-send', returncode=0):
+            program.notify_starting()
+            program.notify_finished(timer)
+            program.notify_failed(timer)
+        # The sad path (should not raise exceptions).
+        with MockedProgram('notify-send', returncode=1):
+            program.notify_starting()
+            program.notify_finished(timer)
+            program.notify_failed(timer)
 
     def test_simple_backup(self):
         """Test a backup of an alternative source directory to a local destination."""
@@ -352,6 +307,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
             crypto_device=CRYPTO_NAME,
             destination=os.path.join(MOUNT_POINT, 'latest'),
             mount_point=MOUNT_POINT,
+            notifications_enabled=False,
         )
         self.assertRaises(MissingBackupDiskError, program.execute)
 
@@ -364,6 +320,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
                 crypto_device=CRYPTO_NAME,
                 destination=os.path.join(MOUNT_POINT, 'latest'),
                 mount_point=MOUNT_POINT,
+                notifications_enabled=False,
             )
             # When `mount' fails it should exit with a nonzero exit code,
             # thereby causing executor to raise an ExternalCommandFailed
@@ -382,6 +339,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
                 crypto_device=CRYPTO_NAME,
                 destination='/some/random/directory',
                 mount_point=MOUNT_POINT,
+                notifications_enabled=False,
             )
             self.assertRaises(InvalidDestinationDirectory, program.transfer_changes)
 
@@ -389,6 +347,7 @@ class RsyncSystemBackupsTestCase(unittest.TestCase):
         """Test that an exception is raised when ``rsync`` fails."""
         program = RsyncSystemBackup(
             destination='0.0.0.0::module/directory',
+            notifications_enabled=False,
             sudo_enabled=False,
         )
         self.assertRaises(ExternalCommandFailed, program.execute)
@@ -478,39 +437,3 @@ def run_cli(*arguments):
         sys.stderr = saved_stderr
         sys.stdout = saved_stdout
     return exit_code, fake_stdout.getvalue()
-
-
-class TemporaryDirectory(object):
-
-    """
-    Easy temporary directory creation & cleanup using the :keyword:`with` statement.
-
-    Here's an example of how to use this:
-
-    .. code-block:: python
-
-       with TemporaryDirectory() as directory:
-           # Do something useful here.
-           assert os.path.isdir(directory)
-    """
-
-    def __init__(self, **options):
-        """
-        Initialize context manager that manages creation & cleanup of temporary directory.
-
-        :param options: Any keyword arguments are passed on to
-                        :func:`tempfile.mkdtemp()`.
-        """
-        self.options = options
-
-    def __enter__(self):
-        """Create the temporary directory."""
-        self.temporary_directory = tempfile.mkdtemp(**self.options)
-        logger.debug("Created temporary directory: %s", self.temporary_directory)
-        return self.temporary_directory
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Destroy the temporary directory."""
-        logger.debug("Cleaning up temporary directory: %s", self.temporary_directory)
-        shutil.rmtree(self.temporary_directory)
-        del self.temporary_directory
