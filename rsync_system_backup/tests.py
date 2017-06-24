@@ -10,12 +10,11 @@
 import contextlib
 import logging
 import os
-import sys
 
 # External dependencies.
 from executor import ExternalCommandFailed, execute
 from humanfriendly import Timer
-from humanfriendly.testing import MockedProgram, TemporaryDirectory, TestCase
+from humanfriendly.testing import MockedProgram, TemporaryDirectory, TestCase, run_cli
 from linux_utils.luks import (
     create_encrypted_filesystem,
     create_image_file,
@@ -24,7 +23,6 @@ from linux_utils.luks import (
     TemporaryKeyFile,
 )
 from rotate_backups import RotateBackups
-from six.moves import StringIO
 
 # The module we're testing.
 from rsync_system_backup import DEFAULT_ROTATION_SCHEME, RsyncSystemBackup
@@ -58,17 +56,17 @@ class RsyncSystemBackupsTestCase(TestCase):
         # Make sure the usage message is shown when no arguments
         # are given and when the -h or --help option is given.
         for options in [], ['-h'], ['--help']:
-            exit_code, output = run_cli(*options)
+            exit_code, output = run_cli(main, *options)
             assert "Usage:" in output
 
     def test_invalid_arguments(self):
         """Test the handling of incorrect command line arguments."""
         # More than two arguments should report an error.
-        exit_code, output = run_cli('a', 'b', 'c')
+        exit_code, output = run_cli(main, 'a', 'b', 'c', merged=True)
         assert exit_code != 0
         assert "Error" in output
         # Invalid `ionice' values should report an error.
-        exit_code, output = run_cli('--ionice=foo')
+        exit_code, output = run_cli(main, '--ionice=foo', merged=True)
         assert exit_code != 0
         assert "Error" in output
 
@@ -160,8 +158,7 @@ class RsyncSystemBackupsTestCase(TestCase):
             self.create_source(source)
             # Run the program through the command line interface.
             exit_code, output = run_cli(
-                '--no-sudo', '--ionice=idle',
-                '--disable-notifications',
+                main, '--no-sudo', '--ionice=idle', '--disable-notifications',
                 source, latest_directory,
             )
             assert exit_code == 0
@@ -181,7 +178,7 @@ class RsyncSystemBackupsTestCase(TestCase):
             self.create_source(source)
             # Run the program through the command line interface.
             exit_code, output = run_cli(
-                '--dry-run', '--no-sudo',
+                main, '--dry-run', '--no-sudo',
                 source, latest_directory,
             )
             assert exit_code == 0
@@ -201,8 +198,7 @@ class RsyncSystemBackupsTestCase(TestCase):
             self.create_source(source)
             # Run the program through the command line interface.
             exit_code, output = run_cli(
-                '--backup', '--no-sudo',
-                '--disable-notifications',
+                main, '--backup', '--no-sudo', '--disable-notifications',
                 source, latest_directory,
             )
             assert exit_code == 0
@@ -283,7 +279,7 @@ class RsyncSystemBackupsTestCase(TestCase):
             execute('rm', '--recursive', destination, sudo=True)
         # Create a new backup.
         exit_code, output = run_cli(
-            '--crypto=%s' % CRYPTO_NAME,
+            main, '--crypto=%s' % CRYPTO_NAME,
             '--mount=%s' % MOUNT_POINT,
             '--disable-notifications',
             # We skip snapshot creation and rotation to minimize the number
@@ -416,24 +412,3 @@ def find_snapshots(directory):
     """Abuse :mod:`rotate_backups` to scan a directory for snapshots."""
     helper = RotateBackups(DEFAULT_ROTATION_SCHEME)
     return helper.collect_backups(directory)
-
-
-def run_cli(*arguments):
-    """Simple wrapper to run :func:`rsync_system_backup.cli.main()` in the same process."""
-    saved_argv = sys.argv
-    saved_stderr = sys.stderr
-    saved_stdout = sys.stdout
-    fake_stdout = StringIO()
-    try:
-        sys.argv = ['rsync-system-backup'] + list(arguments)
-        sys.stdout = fake_stdout
-        sys.stderr = fake_stdout
-        main()
-        exit_code = 0
-    except SystemExit as e:
-        exit_code = e.code
-    finally:
-        sys.argv = saved_argv
-        sys.stderr = saved_stderr
-        sys.stdout = saved_stdout
-    return exit_code, fake_stdout.getvalue()
