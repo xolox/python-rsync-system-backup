@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 24, 2017
+# Last Change: July 10, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -43,6 +43,7 @@ from rsync_system_backup.exceptions import (
     FailedToUnlockError,
     InvalidDestinationDirectory,
     MissingBackupDiskError,
+    UnsupportedPlatformError,
 )
 
 # Semi-standard module versioning.
@@ -63,7 +64,7 @@ class RsyncSystemBackup(PropertyManager):
     The following properties can be set by passing keyword arguments to the
     :class:`RsyncSystemBackup` initializer: :attr:`backup_enabled`,
     :attr:`crypto_device`, :attr:`destination`, :attr:`dry_run`,
-    :attr:`excluded_roots`, :attr:`ionice`, :attr:`mount_point`,
+    :attr:`excluded_roots`, :attr:`force`, :attr:`ionice`, :attr:`mount_point`,
     :attr:`notifications_enabled`, :attr:`rotate_enabled`,
     :attr:`rotation_scheme`, :attr:`snapshot_enabled`, :attr:`source`,
     :attr:`source_context` and :attr:`sudo_enabled`.
@@ -204,6 +205,11 @@ class RsyncSystemBackup(PropertyManager):
         ]
 
     @mutable_property
+    def force(self):
+        """:data:`True` to run `rsync-system-backup` on unsupported platforms, :data:`False` otherwise."""
+        return False
+
+    @mutable_property
     def ionice(self):
         """
         The I/O scheduling class for rsync (a string or :data:`None`).
@@ -307,6 +313,7 @@ class RsyncSystemBackup(PropertyManager):
            a desktop notification to give the user a heads up that the
            system backup has finished (or failed).
         """
+        self.ensure_supported_platform()
         try:
             # We use a `with' statement to enable cleanup commands that
             # are run before this method returns. The unlock_device()
@@ -318,6 +325,34 @@ class RsyncSystemBackup(PropertyManager):
             # assume that the same server is also accessible over SSH, so in
             # this case no destination context is available.
             self.execute_helper()
+
+    def ensure_supported_platform(self):
+        """
+        Make sure we're running on a supported platform.
+
+        :raises: :exc:`.UnsupportedPlatformError` when the output of the
+                 ``uname`` command doesn't include the word 'Linux' and
+                 :attr:`force` is :data:`False`.
+
+        When :attr:`force` is :data:`True` this method logs a warning message
+        instead of raising an exception.
+        """
+        uname_output = self.source_context.capture('uname', capture=True, check=False)
+        if 'linux' not in uname_output.lower():
+            if self.force:
+                logger.warning(compact("""
+                    It looks like you aren't running Linux (which is the only
+                    platform supported by rsync-system-backup) however the -f,
+                    --force option was given so I will continue anyway. Please
+                    note that you are on your own if things break!
+                """))
+            else:
+                raise UnsupportedPlatformError(compact("""
+                    It looks like you aren't running Linux, which is the only
+                    platform supported by rsync-system-backup! You can use the
+                    -f, --force option to override this sanity check. Please
+                    note that you are on your own if things break.
+                """))
 
     def execute_helper(self):
         """Helper for :func:`execute()`."""

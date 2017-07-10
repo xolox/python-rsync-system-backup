@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 23, 2017
+# Last Change: July 11, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Custom exceptions used by rsync-system-backup."""
@@ -10,6 +10,11 @@
 class RsyncSystemBackupError(Exception):
 
     """Base exception for custom exceptions raised by rsync-system-backup."""
+
+
+class UnsupportedPlatformError(RsyncSystemBackupError):
+
+    """Raised when an unsupported (non-Linux) platform is detected."""
 
 
 class InvalidDestinationError(RsyncSystemBackupError):

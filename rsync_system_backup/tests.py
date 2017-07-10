@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 24, 2017
+# Last Change: July 11, 2017
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -22,6 +22,7 @@ from linux_utils.luks import (
     cryptdisks_stop,
     TemporaryKeyFile,
 )
+from mock import MagicMock
 from rotate_backups import RotateBackups
 
 # The module we're testing.
@@ -34,6 +35,7 @@ from rsync_system_backup.exceptions import (
     InvalidDestinationDirectory,
     InvalidDestinationError,
     MissingBackupDiskError,
+    UnsupportedPlatformError,
 )
 
 # Initialize a logger for this module.
@@ -338,6 +340,21 @@ class RsyncSystemBackupsTestCase(TestCase):
                 notifications_enabled=False,
             )
             self.assertRaises(InvalidDestinationDirectory, program.transfer_changes)
+
+    def test_unsupported_platform_error(self):
+        """Test that UnsupportedPlatformError is raised as expected."""
+        with MockedProgram('uname'):
+            program = RsyncSystemBackup(destination='/some/random/directory')
+            self.assertRaises(UnsupportedPlatformError, program.execute)
+
+    def test_unsupported_platform_with_force(self):
+        """Test that UnsupportedPlatformError is raised as expected."""
+        with MockedProgram('uname'):
+            program = RsyncSystemBackup(destination='/some/random/directory', force=True)
+            # Avoid making an actual backup.
+            program.execute_helper = MagicMock()
+            program.execute()
+            assert program.execute_helper.called
 
     def test_backup_failure(self):
         """Test that an exception is raised when ``rsync`` fails."""
