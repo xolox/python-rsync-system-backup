@@ -2,9 +2,7 @@ API documentation
 =================
 
 The following documentation is based on the source code of version |release| of
-the `rsync-system-backup` package.
-
-**Available modules**
+the `rsync-system-backup` package:
 
 .. contents::
    :local:

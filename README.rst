@@ -373,9 +373,9 @@ Contact
 -------
 
 The latest version of `rsync-system-backup` is available on PyPI_ and GitHub_.
-The documentation is hosted on `Read the Docs`_. For bug reports please create
-an issue on GitHub_. If you have questions, suggestions, etc. feel free to send
-me an e-mail at `peter@peterodding.com`_.
+The documentation is hosted on `Read the Docs`_ and includes a changelog_. For
+bug reports please create an issue on GitHub_. If you have questions,
+suggestions, etc. feel free to send me an e-mail at `peter@peterodding.com`_.
 
 License
 -------
@@ -386,6 +386,7 @@ This software is licensed under the `MIT license`_.
 
 .. External references:
 
+.. _changelog: https://rsync-system-backup.readthedocs.org/en/latest/changelog.html
 .. _chroot: https://manpages.debian.org/chroot
 .. _deduplication: https://en.wikipedia.org/wiki/Data_deduplication
 .. _disable command execution: https://unix.stackexchange.com/questions/155139/does-usr-sbin-nologin-as-a-login-shell-serve-a-security-purpose
@@ -405,7 +406,7 @@ This software is licensed under the `MIT license`_.
 .. _Read the Docs: https://rsync-system-backup.readthedocs.org
 .. _rsync daemon: https://manpages.debian.org/rsyncd.conf
 .. _rsync: http://en.wikipedia.org/wiki/rsync
-.. _SSH: https://en.wikipedia.org/wiki/Secure_Shell
 .. _SSH tunnel: https://en.wikipedia.org/wiki/Tunneling_protocol#Secure_Shell_tunneling
+.. _SSH: https://en.wikipedia.org/wiki/Secure_Shell
 .. _updatedb: https://manpages.debian.org/updatedb
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/

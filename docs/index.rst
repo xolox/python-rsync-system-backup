@@ -13,7 +13,7 @@ The readme explains the high level concepts and is mostly targeted at users of
 the command line interface. It's probably the best place to start reading:
 
 .. toctree::
-   users.rst
+   readme.rst
 
 The following instructions are also intended for users of the command line
 interface but are too detailed to be included in the readme:
@@ -28,4 +28,12 @@ The following documentation is targeted at people who are interested in using
 the Python API:
 
 .. toctree::
-   developers.rst
+   api.rst
+
+Change log
+----------
+
+The change log lists notable changes to the project:
+
+.. toctree::
+   changelog.rst
