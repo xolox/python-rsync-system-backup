@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 11, 2017
+# Last Change: April 30, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -165,7 +165,7 @@ def main():
     context_opts = dict()
     program_opts = dict()
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], 'bsrm:c:i:unfvqh', [
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:i:unfvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'ionice=',
             'no-sudo', 'dry-run', 'force', 'disable-notifications', 'verbose',
             'quiet', 'help',
