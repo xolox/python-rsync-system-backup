@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 11, 2017
+# Last Change: April 30, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -61,23 +61,11 @@ class RsyncSystemBackup(PropertyManager):
     """
     Python API for the ``rsync-system-backup`` program.
 
-    The following properties can be set by passing keyword arguments to the
-    :class:`RsyncSystemBackup` initializer: :attr:`backup_enabled`,
-    :attr:`crypto_device`, :attr:`destination`, :attr:`dry_run`,
-    :attr:`excluded_roots`, :attr:`force`, :attr:`ionice`, :attr:`mount_point`,
-    :attr:`notifications_enabled`, :attr:`rotate_enabled`,
-    :attr:`rotation_scheme`, :attr:`snapshot_enabled`, :attr:`source`,
-    :attr:`source_context` and :attr:`sudo_enabled`.
-
-    The values of :attr:`crypto_device_available`,
-    :attr:`crypto_device_unlocked`, :attr:`destination_context` and
-    :attr:`mount_point_active` are computed based on the mutable properties
-    mentioned above.
-
-    The :func:`execute()` method is the main entry point. If you're looking for
-    finer grained control refer to :func:`unlock_device()`,
-    :func:`mount_filesystem()`, :func:`transfer_changes()`,
-    :func:`create_snapshot()` and :func:`rotate_snapshots()`.
+    The :func:`execute()` method is the main entry point.
+    If you're looking for finer grained control refer to
+    :func:`unlock_device()`, :func:`mount_filesystem()`,
+    :func:`transfer_changes()`, :func:`create_snapshot()`
+    and :func:`rotate_snapshots()`.
     """
 
     @mutable_property

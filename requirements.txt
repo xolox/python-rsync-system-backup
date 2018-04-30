@@ -3,5 +3,5 @@ executor >= 17.1
 humanfriendly >= 3.4
 linux-utils >= 0.4
 proc >= 0.14
-property-manager >= 2.0
+property-manager >= 2.3
 rotate-backups >= 4.4
