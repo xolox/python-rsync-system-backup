@@ -111,6 +111,12 @@ Supported options:
     create a backup or snapshot but it does run rsync with the --dry-run
     option.
 
+  -x, --exclude=PATTERN
+
+    Selectively exclude certain files from being included in the backup.
+    Refer to the rsync documentation for allowed PATTERN syntax. Note that
+    rsync-system-backup always uses the 'rsync --one-file-system' option.
+
   -f, --force
 
     By default rsync-system-backup refuses to run on non-Linux systems because
@@ -165,10 +171,10 @@ def main():
     context_opts = dict()
     program_opts = dict()
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:i:unfvqh', [
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:i:unx:fvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'ionice=',
-            'no-sudo', 'dry-run', 'force', 'disable-notifications', 'verbose',
-            'quiet', 'help',
+            'no-sudo', 'dry-run', 'exclude=', 'force', 'disable-notifications',
+            'verbose', 'quiet', 'help',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -192,6 +198,9 @@ def main():
                 program_opts['dry_run'] = True
             elif option in ('-f', '--force'):
                 program_opts['force'] = True
+            elif option in ('-x', '--exclude'):
+                program_opts.setdefault('exclude_list', [])
+                program_opts['exclude_list'].append(value)
             elif option == '--disable-notifications':
                 program_opts['notifications_enabled'] = False
             elif option in ('-v', '--verbose'):

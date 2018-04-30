@@ -169,15 +169,26 @@ class RsyncSystemBackup(PropertyManager):
         """:data:`True` to simulate the backup without writing any files, :data:`False` otherwise."""
         return False
 
-    @mutable_property
+    @lazy_property(writable=True)
+    def exclude_list(self):
+        """
+        A list of patterns (strings) that are excluded from the system backup.
+
+        The patterns in :attr:`exclude_list` are passed on to rsync using
+        the ``--exclude`` option.
+        """
+        return []
+
+    @lazy_property(writable=True)
     def excluded_roots(self):
         """
         A list of patterns (strings) that are excluded from the system backup.
 
-        All of the patterns in this list will be rooted to the top of
-        the filesystem hierarchy when they're given the rsync, to avoid
-        unintentionally excluding deeply nested directories that happen
-        to match names in this list.
+        All of the patterns in this list will be rooted to the top of the
+        filesystem hierarchy when they're given the rsync, to avoid
+        unintentionally excluding deeply nested directories that happen to
+        match names in this list. This is done using the ``--filter=-/
+        PATTERN`` option.
         """
         return [
             '/dev/',
@@ -517,6 +528,9 @@ class RsyncSystemBackup(PropertyManager):
             # subjective mind) from the system backup.
             for pattern in self.excluded_roots:
                 rsync_command.append('--filter=-/ %s' % pattern)
+            # The following rsync options allow user defined exclusion.
+            for pattern in self.exclude_list:
+                rsync_command.append('--exclude=%s' % pattern)
             # Source the backup from the root of the local filesystem
             # and make sure the pathname ends in a trailing slash.
             rsync_command.append(ensure_trailing_slash(self.source))

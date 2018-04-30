@@ -1,7 +1,7 @@
 # Test suite for the `rsync-system-backup' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 11, 2017
+# Last Change: April 30, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Test suite for the `rsync-system-backup` package."""
@@ -364,6 +364,28 @@ class RsyncSystemBackupsTestCase(TestCase):
             sudo_enabled=False,
         )
         self.assertRaises(ExternalCommandFailed, program.execute)
+
+    def test_exclude_list(self):
+        """Test that ``rsync-system-backup --exclude`` works as intended."""
+        with TemporaryDirectory() as temporary_directory:
+            source = os.path.join(temporary_directory, 'source')
+            destination = os.path.join(temporary_directory, 'destination')
+            latest_directory = os.path.join(destination, 'latest')
+            # Create a source directory with two files.
+            os.makedirs(source)
+            with open(os.path.join(source, 'included.txt'), 'w') as handle:
+                handle.write("This file should be included.\n")
+            with open(os.path.join(source, 'excluded.txt'), 'w') as handle:
+                handle.write("This file should be excluded.\n")
+            # Run the program through the command line interface.
+            exit_code, output = run_cli(
+                main, '--backup', '--exclude=excluded.txt', '--no-sudo', '--disable-notifications',
+                source, latest_directory,
+            )
+            assert exit_code == 0
+            # Make sure one of the files was copied and the other wasn't.
+            assert os.path.isfile(os.path.join(latest_directory, 'included.txt'))
+            assert not os.path.exists(os.path.join(latest_directory, 'excluded.txt'))
 
     def create_source(self, source):
         """Create a source directory for testing backups."""
