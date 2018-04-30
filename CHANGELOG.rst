@@ -11,6 +11,14 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 0.11`_ (2018-04-30)
+----------------------------
+
+- Added support for the ``-x``, ``--exclude`` option.
+- Documented that ``--one-file-system`` is always used.
+
+.. _Release 0.11: https://github.com/xolox/python-rsync-system-backup/compare/0.10...0.11
+
 `Release 0.10`_ (2018-04-30)
 ----------------------------
 
