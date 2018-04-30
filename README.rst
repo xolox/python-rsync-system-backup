@@ -156,6 +156,10 @@ The backup process consists of several steps:
    "``-n``, ``--dry-run``","Don't make any changes, just report what would be done. This doesn't
    create a backup or snapshot but it does run rsync with the ``--dry-run``
    option."
+   "``-f``, ``--force``","By default rsync-system-backup refuses to run on non-Linux systems because
+   it was designed specifically for use on Linux. The use of the ``-f``, ``--force``
+   option sidesteps this sanity check. Please note that you are on your own if
+   things break!"
    ``--disable-notifications``,"By default a desktop notification is shown (using notify-send) before the
    system backup starts and after the backup finishes. The use of this option
    disables the notifications (notify-send will not be called at all)."
