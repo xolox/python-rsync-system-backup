@@ -11,6 +11,16 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 0.10`_ (2018-04-30)
+----------------------------
+
+- Switched to the more user friendly ``getopt.gnu_getopt()``.
+- Added this changelog, restructured the online documentation.
+- Documented the ``-f``, ``--force`` option in the readme.
+- Integrated the use of ``property_manager.sphinx``.
+
+.. _Release 0.10: https://github.com/xolox/python-rsync-system-backup/compare/0.9...0.10
+
 `Release 0.9`_ (2017-07-11)
 ---------------------------
 
