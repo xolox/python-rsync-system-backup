@@ -24,16 +24,23 @@ Status
 
 While this project brings together more than ten years of experience in
 creating (system) backups using rsync_, all of the actual Python code was
-written in the first few months of 2017 and hasn't seen much real world use.
+written in the first few months of 2017 and has seen limited real world use.
+The project does however have an automated test suite with more than 90% test
+coverage and my intention is to extend the test coverage further.
 
-.. warning:: I'm releasing this project as alpha software and I probably wont
-             be changing that label until I've actually tried out each of the
-             (supposedly) supported use cases for a while :-).
+In May 2018 I changed the status from alpha to beta as part of release 1.0. The
+bump in major version number was triggered by a backwards incompatible code
+change, however at that point I had been using `rsync-system-backup` to make
+local backups of several of my Linux systems for the majority of a year. Also
+several colleagues of mine have used the how-to on setting up unattended
+backups to an encrypted USB disk.
 
-Nevertheless there is already 94% test coverage and my intention is to extend
-the test coverage further. Also I will be switching each of my existing ad-hoc
-backup scripts over to this project in the first half of 2017, so I may very
-likely be the first user running into any bugs :-).
+.. warning:: Please use the ``--dry-run`` option when you're getting familiar
+             with how `rsync-system-backup` works and don't remove the option
+             until you're confident that you have the right command line,
+             because using `rsync-system-backup` in the wrong way can cause
+             data loss (for example by accidentally swapping the ``SOURCE``
+             and ``DESTINATION`` arguments).
 
 Installation
 ------------
@@ -77,6 +84,11 @@ The required DESTINATION argument specifies the (possibly remote) location
 where the backup is stored, in the syntax of rsync's command line interface.
 The optional SOURCE argument defaults to '/' which means the complete root
 filesystem will be included in the backup (other filesystems are excluded).
+
+Please use the ``--dry-run`` option when getting familiar with this program and
+don't remove it until you're confident that you have the right command line,
+because using this program in the wrong way can cause data loss (for example
+by accidentally swapping the SOURCE and DESTINATION arguments).
 
 Supported locations include:
 
@@ -145,6 +157,11 @@ The backup process consists of several steps:
    If you want the backup process to run fully unattended you can configure a
    key file in /etc/crypttab, otherwise you will be asked for the password
    each time the encrypted filesystem is unlocked."
+   "``-t``, ``--tunnel=TUNNEL_SPEC``","Connect to an rsync daemon through an SSH tunnel. This provides encryption
+   for rsync client to daemon connections that are not otherwise encrypted.
+   The value of ``TUNNEL_SPEC`` is expected to be an SSH alias, host name or IP
+   address. Optionally a username can be prefixed (followed by '@') and/or a
+   port number can be suffixed (preceded by ':')."
    "``-i``, ``--ionice=CLASS``","Use the 'ionice' program to set the I/O scheduling class and priority of
    the 'rm' invocations used to remove backups. ``CLASS`` is expected to be one of
    the values 'idle', 'best-effort' or 'realtime'. Refer to the man page of
@@ -156,6 +173,9 @@ The backup process consists of several steps:
    "``-n``, ``--dry-run``","Don't make any changes, just report what would be done. This doesn't
    create a backup or snapshot but it does run rsync with the ``--dry-run``
    option."
+   "``-x``, ``--exclude=PATTERN``","Selectively exclude certain files from being included in the backup.
+   Refer to the rsync documentation for allowed ``PATTERN`` syntax. Note that
+   rsync-system-backup always uses the 'rsync ``--one-file-system``' option."
    "``-f``, ``--force``","By default rsync-system-backup refuses to run on non-Linux systems because
    it was designed specifically for use on Linux. The use of the ``-f``, ``--force``
    option sidesteps this sanity check. Please note that you are on your own if

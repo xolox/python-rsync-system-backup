@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 4, 2018
+# Last Change: May 5, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -13,6 +13,11 @@ The required DESTINATION argument specifies the (possibly remote) location
 where the backup is stored, in the syntax of rsync's command line interface.
 The optional SOURCE argument defaults to '/' which means the complete root
 filesystem will be included in the backup (other filesystems are excluded).
+
+Please use the --dry-run option when getting familiar with this program and
+don't remove it until you're confident that you have the right command line,
+because using this program in the wrong way can cause data loss (for example
+by accidentally swapping the SOURCE and DESTINATION arguments).
 
 Supported locations include:
 

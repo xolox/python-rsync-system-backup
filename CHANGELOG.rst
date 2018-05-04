@@ -11,6 +11,34 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 1.0`_ (2018-05-04)
+---------------------------
+
+**Bug fix: SSH tunnel support actually works now :-P (backwards incompatible).**
+
+This week I switched the backups of my VPS over to `rsync-system-backup`. The
+biggest hurdle was the fact that I never finished nor tested support for SSH
+tunnels in `rsync-system-backup` which I needed now:
+
+- The command line interface didn't expose the functionality.
+- Due to various bugs it wouldn't have worked even if the
+  functionality had been exposed.
+
+The changes in this release:
+
+- Added the ``-t``, ``--tunnel`` command line option.
+- Integrated SSH tunnel support provided by `executor 19.3`_.
+- Removed the ``ForwardedDestination`` class (this functionality has been
+  replaced by the new ``Destination.ssh_tunnel`` property).
+
+Because the removal of ``ForwardedDestination`` is backwards incompatible I've
+decided to bump the major version number. It's actually kind of fitting because
+I've been using `rsync-system-backup` for local backups for months now and
+that's working fine; the main thing missing was indeed SSH tunnel support :-).
+
+.. _Release 1.0: https://github.com/xolox/python-rsync-system-backup/compare/0.11...1.0
+.. _executor 19.3: http://executor.readthedocs.io/en/latest/changelog.html#release-19-3-2018-05-04
+
 `Release 0.11`_ (2018-04-30)
 ----------------------------
 

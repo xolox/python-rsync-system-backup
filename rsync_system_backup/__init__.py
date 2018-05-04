@@ -47,7 +47,7 @@ from rsync_system_backup.exceptions import (
 )
 
 # Semi-standard module versioning.
-__version__ = '0.11'
+__version__ = '1.0'
 
 # Public identifiers that require documentation.
 __all__ = (
