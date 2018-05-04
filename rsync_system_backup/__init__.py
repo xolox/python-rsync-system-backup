@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 30, 2018
+# Last Change: May 4, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -48,6 +48,15 @@ from rsync_system_backup.exceptions import (
 
 # Semi-standard module versioning.
 __version__ = '0.11'
+
+# Public identifiers that require documentation.
+__all__ = (
+    'DEFAULT_ROTATION_SCHEME',
+    'RsyncSystemBackup',
+    '__version__',
+    'ensure_trailing_slash',
+    'logger',
+)
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -336,7 +345,7 @@ class RsyncSystemBackup(PropertyManager):
         When :attr:`force` is :data:`True` this method logs a warning message
         instead of raising an exception.
         """
-        uname_output = self.source_context.capture('uname', capture=True, check=False)
+        uname_output = self.source_context.capture('uname', capture=True, check=False, shell=False)
         if 'linux' not in uname_output.lower():
             if self.force:
                 logger.warning(compact("""

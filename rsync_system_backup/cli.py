@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 30, 2018
+# Last Change: May 4, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -91,6 +91,14 @@ Supported options:
     key file in /etc/crypttab, otherwise you will be asked for the password
     each time the encrypted filesystem is unlocked.
 
+  -t, --tunnel=TUNNEL_SPEC
+
+    Connect to an rsync daemon through an SSH tunnel. This provides encryption
+    for rsync client to daemon connections that are not otherwise encrypted.
+    The value of TUNNEL_SPEC is expected to be an SSH alias, host name or IP
+    address. Optionally a username can be prefixed (followed by '@') and/or a
+    port number can be suffixed (preceded by ':').
+
   -i, --ionice=CLASS
 
     Use the 'ionice' program to set the I/O scheduling class and priority of
@@ -153,11 +161,20 @@ import sys
 import coloredlogs
 from executor import validate_ionice_class
 from executor.contexts import create_context
+from executor.ssh.client import SecureTunnel
 from humanfriendly.terminal import connected_to_terminal, usage, warning
 
 # Modules included in our package.
 from rsync_system_backup import RsyncSystemBackup
+from rsync_system_backup.destinations import Destination, RSYNCD_PORT
 from rsync_system_backup.exceptions import MissingBackupDiskError, RsyncSystemBackupError
+
+# Public identifiers that require documentation.
+__all__ = (
+    'enable_explicit_action',
+    'logger',
+    'main',
+)
 
 # Initialize a logger.
 logger = logging.getLogger(__name__)
@@ -170,11 +187,12 @@ def main():
     # Parse the command line arguments.
     context_opts = dict()
     program_opts = dict()
+    dest_opts = dict()
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:i:unx:fvqh', [
-            'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'ionice=',
-            'no-sudo', 'dry-run', 'exclude=', 'force', 'disable-notifications',
-            'verbose', 'quiet', 'help',
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqh', [
+            'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
+            'ionice=', 'no-sudo', 'dry-run', 'exclude=', 'force',
+            'disable-notifications', 'verbose', 'quiet', 'help',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -187,6 +205,19 @@ def main():
                 program_opts['mount_point'] = value
             elif option in ('-c', '--crypto'):
                 program_opts['crypto_device'] = value
+            elif option in ('-t', '--tunnel'):
+                ssh_user, _, value = value.rpartition('@')
+                ssh_alias, _, port_number = value.partition(':')
+                tunnel_opts = dict(
+                    ssh_alias=ssh_alias,
+                    ssh_user=ssh_user,
+                    # The port number of the rsync daemon.
+                    remote_port=RSYNCD_PORT,
+                )
+                if port_number:
+                    # The port number of the SSH server.
+                    tunnel_opts['port'] = int(port_number)
+                dest_opts['ssh_tunnel'] = SecureTunnel(**tunnel_opts)
             elif option in ('-i', '--ionice'):
                 value = value.lower().strip()
                 validate_ionice_class(value)
@@ -220,7 +251,8 @@ def main():
             program_opts['source'] = arguments.pop(0)
         if arguments:
             # Get the destination from the second (or only) argument.
-            program_opts['destination'] = arguments[0]
+            dest_opts['expression'] = arguments[0]
+            program_opts['destination'] = Destination(**dest_opts)
         elif not os.environ.get('RSYNC_MODULE_PATH'):
             # Show a usage message when no destination is given.
             usage(__doc__)

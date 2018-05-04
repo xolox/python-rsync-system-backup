@@ -1,18 +1,17 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 20, 2017
+# Last Change: May 4, 2018
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Parsing of rsync destination syntax (and then some)."""
 
 # Standard library modules.
+import logging
 import os
 import re
 
 # External dependencies.
-from executor.ssh.client import SSH_PROGRAM_NAME, RemoteCommand
-from executor.ssh.server import EphemeralTCPServer
 from humanfriendly import compact
 from property_manager import (
     PropertyManager,
@@ -34,29 +33,33 @@ The default port of the `rsync daemon`_ (an integer).
 .. _rsync daemon: https://manpages.debian.org/rsyncd.conf
 """
 
-# A compiled regular expression pattern to parse local destinations,
-# used as a fall back because it matches any nonempty string.
 LOCAL_DESTINATION = re.compile('^(?P<directory>.+)$')
+"""
+A compiled regular expression pattern to parse local destinations,
+used as a fall back because it matches any nonempty string.
+"""
 
-# A compiled regular expression pattern to parse remote destinations
-# of the form [USER@]HOST:DEST (using an SSH connection).
 SSH_DESTINATION = re.compile('''
     ^ ( (?P<username> [^@]+ ) @ )? # optional username
     (?P<hostname> [^:]+ ) :        # mandatory host name
     (?P<directory> .* )            # optional pathname
 ''', re.VERBOSE)
+"""
+A compiled regular expression pattern to parse remote destinations
+of the form ``[USER@]HOST:DEST`` (using an SSH connection).
+"""
 
-# A compiled regular expression pattern to parse remote destinations
-# of the form [USER@]HOST::DEST (using an rsync daemon connection).
 SIMPLE_DAEMON_DESTINATION = re.compile('''
     ^ ( (?P<username> [^@]+ ) @ )? # optional username
     (?P<hostname> [^:]+ ) ::       # mandatory host name
     (?P<module> [^/]+ )            # mandatory module name
     ( / (?P<directory> .* ) )? $   # optional pathname (without leading slash)
 ''', re.VERBOSE)
+"""
+A compiled regular expression pattern to parse remote destinations of the
+form ``[USER@]HOST::MODULE[/DIRECTORY]`` (using an rsync daemon connection).
+"""
 
-# A compiled regular expression pattern to parse remote destinations of the
-# form rsync://[USER@]HOST[:PORT]/DEST (using an rsync daemon connection).
 ADVANCED_DAEMON_DESTINATION = re.compile('''
     ^ rsync://                    # static prefix
     ( (?P<username>[^@]+) @ )?    # optional username
@@ -65,15 +68,38 @@ ADVANCED_DAEMON_DESTINATION = re.compile('''
     / (?P<module> [^/]+ )         # mandatory module name
     ( / (?P<directory> .* ) )? $  # optional pathname (without leading slash)
 ''', re.VERBOSE)
+"""
+A compiled regular expression pattern to parse remote destinations of the form
+``rsync://[USER@]HOST[:PORT]/MODULE[/DIRECTORY]`` (using an rsync daemon
+connection).
+"""
 
-# A list of compiled regular expression patterns to match destination
-# expressions. The patterns are ordered by decreasing specificity.
 DESTINATION_PATTERNS = [
     ADVANCED_DAEMON_DESTINATION,
     SIMPLE_DAEMON_DESTINATION,
     SSH_DESTINATION,
     LOCAL_DESTINATION,
 ]
+"""
+A list of compiled regular expression patterns to match destination
+expressions. The patterns are ordered by decreasing specificity.
+"""
+
+
+# Public identifiers that require documentation.
+__all__ = (
+    'logger',
+    'RSYNCD_PORT',
+    'LOCAL_DESTINATION',
+    'SSH_DESTINATION',
+    'SIMPLE_DAEMON_DESTINATION',
+    'ADVANCED_DAEMON_DESTINATION',
+    'DESTINATION_PATTERNS',
+    'Destination',
+)
+
+# Initialize a logger for this module.
+logger = logging.getLogger(__name__)
 
 
 class Destination(PropertyManager):
@@ -167,8 +193,14 @@ class Destination(PropertyManager):
 
     @mutable_property
     def port_number(self):
-        """The port number of a remote `rsync daemon`_ (a number, defaults to :data:`RSYNCD_PORT`)."""
-        return RSYNCD_PORT
+        """
+        The port number of a remote `rsync daemon`_ (a number).
+
+        When :attr:`ssh_tunnel` is set the value of :attr:`port_number`
+        defaults to :attr:`executor.ssh.client.SecureTunnel.local_port`,
+        otherwise it defaults to :data:`RSYNCD_PORT`.
+        """
+        return self.ssh_tunnel.local_port if self.ssh_tunnel is not None else RSYNCD_PORT
 
     @port_number.setter
     def port_number(self, value):
@@ -176,87 +208,21 @@ class Destination(PropertyManager):
         set_property(self, 'port_number', int(value))
 
     @mutable_property
+    def ssh_tunnel(self):
+        """A :class:`~executor.ssh.client.SecureTunnel` object or :data:`None` (defaults to :data:`None`)."""
+
+    @mutable_property
     def username(self):
         """The username for connecting to a remote system (a string)."""
         return ''
 
     def __enter__(self):
-        """
-        Enable using :class:`Destination` objects as context managers.
-
-        The need to support using :class:`Destination` objects as context
-        managers is that :class:`ForwardedDestination` requires to be used
-        as a context manager. Yes, I'm letting subclasses affect their base
-        classes. This is not a code smell, it's a feature ;-).
-        """
+        """Automatically open :attr:`ssh_tunnel` when required."""
+        if self.ssh_tunnel:
+            self.ssh_tunnel.__enter__()
         return self
 
     def __exit__(self, exc_type=None, exc_value=None, traceback=None):
-        """Enable using :class:`Destination` objects as context managers."""
-
-
-class ForwardedDestination(Destination, RemoteCommand, EphemeralTCPServer):
-
-    """
-    The :class:`ForwardedDestination` class represents a tunneled `rsync daemon`_ connection over SSH.
-
-    This class is a somewhat awkward composition of three base classes:
-
-    - :class:`Destination`
-    - :class:`~executor.ssh.client.RemoteCommand`
-    - :class:`~executor.ssh.server.EphemeralTCPServer`
-
-    Each of these classes has a significant number of properties whose names
-    were never intended to be unambiguous among each other when composed like
-    this, because we're dealing with two host names and three port numbers:
-
-    ==========================================================  ========================================================
-    Property                                                    Description
-    ==========================================================  ========================================================
-    :attr:`executor.ssh.client.RemoteAccount.ssh_alias`         The SSH alias, host name or IP address of the SSH server
-                                                                that is tunneling the rsync daemon connection.
-    :attr:`executor.ssh.client.RemoteCommand.port`              The port number on which the SSH server is listening.
-    :attr:`Destination.hostname`                                The host name or IP address of the rsync daemon (which
-                                                                the SSH server connects to on behalf of the SSH client).
-    :attr:`ForwardedDestination.remote_port`                    The port number on which the rsync daemon is listening.
-    :attr:`executor.ssh.server.EphemeralTCPServer.port_number`  Overrides :attr:`Destination.port_number` and defines
-                                                                the port number on which the SSH client will be
-                                                                listening and forwarding connections to the SSH server
-                                                                (which in turn forwards them to the rsync daemon).
-    ==========================================================  ========================================================
-
-    To summarize: While I've managed to avoid naming collisions this is
-    definitely a bit messy and confusing.
-    """
-
-    @property
-    def ssh_command(self):
-        """
-        The command used to run the SSH client program.
-
-        This property overrides :attr:`~executor.ssh.client.RemoteCommand.ssh_command`
-        to inject the command line option ``-L`` that opens a TCP tunnel.
-        """
-        command = [SSH_PROGRAM_NAME]
-        # Enable compression by default, but allow opting out.
-        if self.compression:
-            command.append('-C')
-        # Do not execute a remote command. This enables compatibility with
-        # `tunnel only' SSH accounts that have their shell set to something
-        # like /usr/sbin/nologin.
-        command.append('-N')
-        # Forward the connection from our local rsync client to the remote
-        # rsync daemon over the SSH connection.
-        command.extend(['-L', '%i:%s:%i' % (self.port_number, self.hostname, self.remote_port)])
-        command.append(self.ssh_alias)
-        return command
-
-    @mutable_property
-    def compression(self):
-        """Whether compression should be enabled (a boolean, defaults to :data:`True`)."""
-        return True
-
-    @mutable_property
-    def remote_port(self):
-        """The TCP port that the `rsync daemon`_ is listening on (an integer, defaults to :data:`RSYNCD_PORT`)."""
-        return RSYNCD_PORT
+        """Automatically close :attr:`ssh_tunnel` when required"""
+        if self.ssh_tunnel:
+            self.ssh_tunnel.__exit__(exc_type, exc_value, traceback)
