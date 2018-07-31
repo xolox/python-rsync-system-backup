@@ -178,6 +178,11 @@ class RsyncSystemBackup(PropertyManager):
         """:data:`True` to simulate the backup without writing any files, :data:`False` otherwise."""
         return False
 
+    @mutable_property
+    def multi_fs(self):
+        """:data:`True` to allow rsync to cross filesystem boundaries, :data:`False` otherwise."""
+        return False
+
     @lazy_property(writable=True)
     def exclude_list(self):
         """
@@ -528,11 +533,8 @@ class RsyncSystemBackup(PropertyManager):
             rsync_command.append('--xattrs')
             # The following rsync option avoids including mounted external
             # drives like USB sticks in system backups.
-            #
-            # FIXME This will most likely be problematic for users with fancy
-            #       partitioning schemes that e.g. mount /home to a different
-            #       disk or partition.
-            rsync_command.append('--one-file-system')
+            if not self.multi_fs:
+                rsync_command.append('--one-file-system')
             # The following rsync options exclude irrelevant directories (to my
             # subjective mind) from the system backup.
             for pattern in self.excluded_roots:

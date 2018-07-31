@@ -124,6 +124,11 @@ Supported options:
     create a backup or snapshot but it does run rsync with the --dry-run
     option.
 
+  --multi-fs
+
+    Allow rsync to cross filesystem boundaries. (has the opposite effect
+    of rsync option "-x, --one-file-system").
+
   -x, --exclude=PATTERN
 
     Selectively exclude certain files from being included in the backup.
@@ -197,7 +202,7 @@ def main():
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
             'ionice=', 'no-sudo', 'dry-run', 'exclude=', 'force',
-            'disable-notifications', 'verbose', 'quiet', 'help',
+            'disable-notifications', 'verbose', 'quiet', 'help', 'multi-fs',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -237,6 +242,8 @@ def main():
             elif option in ('-x', '--exclude'):
                 program_opts.setdefault('exclude_list', [])
                 program_opts['exclude_list'].append(value)
+            elif option == '--multi-fs':
+                program_opts['multi_fs'] = True
             elif option == '--disable-notifications':
                 program_opts['notifications_enabled'] = False
             elif option in ('-v', '--verbose'):
