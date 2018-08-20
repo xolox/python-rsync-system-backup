@@ -303,6 +303,11 @@ class RsyncSystemBackup(PropertyManager):
         """:data: defaults to zero. Represents the number of -Q arguments received"""
         return 0
 
+    @mutable_property
+    def rsync_show_progress(self):
+        """:data: defaults to False. Will have rsync display transfer progress if True"""
+        return False
+
     def execute(self):
         """
         Execute the requested actions (backup, snapshot and/or rotate).
@@ -533,6 +538,8 @@ class RsyncSystemBackup(PropertyManager):
                 rsync_command.append('--verbose')
             for _ in range(self.rsync_quiet_count):
                 rsync_command.append('--quiet')
+            if self.rsync_show_progress:
+                rsync_command.append('--progress')
             # The following rsync options delete files in the backup
             # destination that no longer exist on the local system.
             # Due to snapshotting this won't cause data loss.

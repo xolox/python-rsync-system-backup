@@ -164,6 +164,10 @@ Supported options:
 
     Make the rsync program less noisy.
 
+  -p, --rsync-progress
+
+    Have rsync show transfer progress.
+
   -h, --help
 
     Show this message and exit.
@@ -207,11 +211,11 @@ def main():
     program_opts = dict()
     dest_opts = dict()
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqhVQ', [
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqhVQp', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
             'ionice=', 'no-sudo', 'dry-run', 'exclude=', 'force',
             'disable-notifications', 'verbose', 'quiet', 'help', 'multi-fs',
-            'rsync-verbose', 'rsync-quiet',
+            'rsync-verbose', 'rsync-quiet', 'rsync-progress'
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -269,6 +273,8 @@ def main():
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):
                 coloredlogs.decrease_verbosity()
+            elif option in ('-p', '--rsync-progress'):
+                program_opts['rsync_show_progress'] = True
             elif option in ('-h', '--help'):
                 usage(__doc__)
                 return
