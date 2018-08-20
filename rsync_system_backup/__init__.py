@@ -293,6 +293,16 @@ class RsyncSystemBackup(PropertyManager):
         """:data:`True` to run ``rsync`` and snapshot creation with superuser privileges, :data:`False` otherwise."""
         return True
 
+    @mutable_property
+    def rsync_verbose_count(self):
+        """:data: defaults to zero. Represents the number of -V arguments received"""
+        return 0
+
+    @mutable_property
+    def rsync_quiet_count(self):
+        """:data: defaults to zero. Represents the number of -Q arguments received"""
+        return 0
+
     def execute(self):
         """
         Execute the requested actions (backup, snapshot and/or rotate).
@@ -519,6 +529,10 @@ class RsyncSystemBackup(PropertyManager):
             if self.dry_run:
                 rsync_command.append('--dry-run')
                 rsync_command.append('--verbose')
+            for _ in range(self.rsync_verbose_count):
+                rsync_command.append('--verbose')
+            for _ in range(self.rsync_quiet_count):
+                rsync_command.append('--quiet')
             # The following rsync options delete files in the backup
             # destination that no longer exist on the local system.
             # Due to snapshotting this won't cause data loss.

@@ -150,11 +150,19 @@ Supported options:
 
   -v, --verbose
 
-    Make more noise (increase logging verbosity). Can be repeated.
+    Make more noise (increase logging verbosity for the python app). Can be repeated.
+
+  -V, --rsync-verbose
+
+    Make the rsync program more noisy. Can be repeated.
 
   -q, --quiet
 
-    Make less noise (decrease logging verbosity). Can be repeated.
+    Make less noise (decrease logging verbosity for the python app). Can be repeated.
+
+  -Q, --rsync-quiet
+
+    Make the rsync program less noisy.
 
   -h, --help
 
@@ -199,10 +207,11 @@ def main():
     program_opts = dict()
     dest_opts = dict()
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqh', [
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqhVQ', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
             'ionice=', 'no-sudo', 'dry-run', 'exclude=', 'force',
             'disable-notifications', 'verbose', 'quiet', 'help', 'multi-fs',
+            'rsync-verbose', 'rsync-quiet',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
@@ -246,6 +255,16 @@ def main():
                 program_opts['multi_fs'] = True
             elif option == '--disable-notifications':
                 program_opts['notifications_enabled'] = False
+            elif option in ('-V', '--rsync-verbose'):
+                if 'rsync_verbose_count' not in program_opts:
+                    program_opts['rsync_verbose_count'] = 1
+                else:
+                    program_opts['rsync_verbose_count'] = program_opts['rsync_verbose_count'] + 1
+            elif option in ('-Q', '--rsync-quiet'):
+                if 'rsync_quiet_count' not in program_opts:
+                    program_opts['rsync_quiet_count'] = 1
+                else:
+                    program_opts['rsync_quiet_count'] = program_opts['rsync_quiet_count'] + 1
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):
