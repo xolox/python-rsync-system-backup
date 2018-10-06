@@ -179,6 +179,11 @@ class RsyncSystemBackup(PropertyManager):
         return False
 
     @mutable_property
+    def checkum(self):
+        """:data:`True` to enable the checksum verification by rsync instead of usual time checks."""
+        return False
+
+    @mutable_property
     def multi_fs(self):
         """:data:`True` to allow rsync to cross filesystem boundaries, :data:`False` otherwise."""
         return False
@@ -540,6 +545,8 @@ class RsyncSystemBackup(PropertyManager):
                 rsync_command.append('--quiet')
             if self.rsync_show_progress:
                 rsync_command.append('--progress')
+            if self.checkum:
+                rsync_command.append('--checksum')
             # The following rsync options delete files in the backup
             # destination that no longer exist on the local system.
             # Due to snapshotting this won't cause data loss.
