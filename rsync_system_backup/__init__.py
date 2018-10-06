@@ -178,6 +178,16 @@ class RsyncSystemBackup(PropertyManager):
         """:data:`True` to simulate the backup without writing any files, :data:`False` otherwise."""
         return False
 
+    @mutable_property
+    def checkum(self):
+        """:data:`True` to enable the checksum verification by rsync instead of usual time checks."""
+        return False
+
+    @mutable_property
+    def multi_fs(self):
+        """:data:`True` to allow rsync to cross filesystem boundaries, :data:`False` otherwise."""
+        return False
+
     @lazy_property(writable=True)
     def exclude_list(self):
         """
@@ -287,6 +297,21 @@ class RsyncSystemBackup(PropertyManager):
     def sudo_enabled(self):
         """:data:`True` to run ``rsync`` and snapshot creation with superuser privileges, :data:`False` otherwise."""
         return True
+
+    @mutable_property
+    def rsync_verbose_count(self):
+        """:data: defaults to zero. Represents the number of -V arguments received"""
+        return 0
+
+    @mutable_property
+    def rsync_quiet_count(self):
+        """:data: defaults to zero. Represents the number of -Q arguments received"""
+        return 0
+
+    @mutable_property
+    def rsync_show_progress(self):
+        """:data: defaults to False. Will have rsync display transfer progress if True"""
+        return False
 
     def execute(self):
         """
@@ -514,6 +539,14 @@ class RsyncSystemBackup(PropertyManager):
             if self.dry_run:
                 rsync_command.append('--dry-run')
                 rsync_command.append('--verbose')
+            for _ in range(self.rsync_verbose_count):
+                rsync_command.append('--verbose')
+            for _ in range(self.rsync_quiet_count):
+                rsync_command.append('--quiet')
+            if self.rsync_show_progress:
+                rsync_command.append('--progress')
+            if self.checkum:
+                rsync_command.append('--checksum')
             # The following rsync options delete files in the backup
             # destination that no longer exist on the local system.
             # Due to snapshotting this won't cause data loss.
@@ -528,11 +561,8 @@ class RsyncSystemBackup(PropertyManager):
             rsync_command.append('--xattrs')
             # The following rsync option avoids including mounted external
             # drives like USB sticks in system backups.
-            #
-            # FIXME This will most likely be problematic for users with fancy
-            #       partitioning schemes that e.g. mount /home to a different
-            #       disk or partition.
-            rsync_command.append('--one-file-system')
+            if not self.multi_fs:
+                rsync_command.append('--one-file-system')
             # The following rsync options exclude irrelevant directories (to my
             # subjective mind) from the system backup.
             for pattern in self.excluded_roots:
