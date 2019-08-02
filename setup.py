@@ -66,6 +66,7 @@ setup(name="rsync-system-backup",
       url='https://github.com/xolox/python-rsync-system-backup',
       author="Peter Odding",
       author_email='peter@peterodding.com',
+      license='MIT',
       packages=find_packages(),
       entry_points=dict(console_scripts=[
           'rsync-system-backup = rsync_system_backup.cli:main',
