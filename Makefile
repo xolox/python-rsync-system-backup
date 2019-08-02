@@ -29,7 +29,7 @@ default:
 
 install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
-	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
+	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --python=python3 --quiet "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
 	@pip install --quiet --requirement=requirements.txt
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
