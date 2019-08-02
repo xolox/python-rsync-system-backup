@@ -12,8 +12,7 @@ Linux_ systems. Supported backup destinations include local disks (possibly
 encrypted using LUKS_) and remote systems that are running an SSH_ server or
 `rsync daemon`_. Each backup produces a timestamped snapshot and these
 snapshots are rotated according to a rotation scheme that you can configure.
-The package is currently tested on cPython 2.6, 2.7, 3.4, 3.5, 3.6 and PyPy
-(2.7).
+The package is currently tested on cPython 2.7, 3.4, 3.5, 3.6 and PyPy (2.7).
 
 .. contents::
    :depth: 3
