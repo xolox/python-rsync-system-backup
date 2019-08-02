@@ -11,6 +11,26 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 1.1`_ (2019-08-02)
+---------------------------
+
+- The ``--multi-fs`` option suggested in pull request `#3`_ was added.
+
+  This option has the opposite effect of the rsync option ``--one-file-system``
+  because `rsync-system-backup` defaults to running rsync with
+  ``--one-file-system`` and must be instructed not to using ``--multi-fs``."
+
+  This change was merged by cherry picking the relevant commit from the remote
+  branch, to avoid pulling in unrelated changes (see the pull request for
+  details).
+
+- Stop testing on Python 2.6 (because Travis CI no longer supports it and
+  working around this would cost an unreasonable amount of time) and start
+  testing support for Python 3.7.
+
+.. _Release 1.1: https://github.com/xolox/python-rsync-system-backup/compare/1.0...1.1
+.. _#3: https://github.com/xolox/python-rsync-system-backup/pull/3
+
 `Release 1.0`_ (2018-05-04)
 ---------------------------
 
