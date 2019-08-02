@@ -1,7 +1,7 @@
 # Makefile for the `rsync-system-backup' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: March 30, 2017
+# Last Change: August 2, 2019
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 PACKAGE_NAME = rsync-system-backup
@@ -31,8 +31,7 @@ install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
-	@test -x "$(VIRTUAL_ENV)/bin/pip-accel" || pip install --quiet pip-accel
-	@pip-accel install --quiet --requirement=requirements.txt
+	@pip install --quiet --requirement=requirements.txt
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
@@ -45,25 +44,25 @@ check: install
 	@scripts/check-code-style.sh
 
 test: install
-	@pip-accel install --quiet --requirement=requirements-tests.txt
+	@pip install --quiet --requirement=requirements-tests.txt
 	@py.test --cov
 	@coverage html
 	@coverage report --fail-under=90 &>/dev/null
 
 tox: install
-	@pip-accel install --quiet tox && tox
+	@pip install --quiet tox && tox
 
 readme: install
-	@pip-accel install --quiet cogapp && cog.py -r README.rst
+	@pip install --quiet cogapp && cog.py -r README.rst
 
 docs: readme
-	@pip-accel install --quiet sphinx
+	@pip install --quiet sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 
 publish: install
 	git push origin && git push --tags origin
 	$(MAKE) clean
-	pip-accel install --quiet twine wheel
+	pip install --quiet twine wheel
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
 	$(MAKE) clean
