@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 4, 2018
+# Last Change: August 2, 2019
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """Parsing of rsync destination syntax (and then some)."""
@@ -60,7 +60,7 @@ A compiled regular expression pattern to parse remote destinations of the
 form ``[USER@]HOST::MODULE[/DIRECTORY]`` (using an rsync daemon connection).
 """
 
-ADVANCED_DAEMON_DESTINATION = re.compile('''
+ADVANCED_DAEMON_DESTINATION = re.compile(r'''
     ^ rsync://                    # static prefix
     ( (?P<username>[^@]+) @ )?    # optional username
     (?P<hostname> [^:/]+ )        # mandatory host name
