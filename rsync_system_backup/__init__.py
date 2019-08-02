@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 4, 2018
+# Last Change: August 2, 2019
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -180,7 +180,15 @@ class RsyncSystemBackup(PropertyManager):
 
     @mutable_property
     def multi_fs(self):
-        """:data:`True` to allow rsync to cross filesystem boundaries, :data:`False` otherwise."""
+        """
+        :data:`True` to allow rsync to cross filesystem boundaries, :data:`False` otherwise.
+
+        This property has the opposite effect of the rsync command line
+        option ``--one-file-system`` because :attr:`multi_fs` defaults to
+        :data:`False` which means rsync is run with ``--one-file-system``.
+        You can set :attr:`multi_fs` to :data:`True` to omit
+        ``--one-file-system`` from the rsync command line.
+        """
         return False
 
     @lazy_property(writable=True)

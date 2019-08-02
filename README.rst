@@ -173,6 +173,10 @@ The backup process consists of several steps:
    "``-n``, ``--dry-run``","Don't make any changes, just report what would be done. This doesn't
    create a backup or snapshot but it does run rsync with the ``--dry-run``
    option."
+   ``--multi-fs``,"Allow rsync to cross filesystem boundaries. This option has the opposite
+   effect of the rsync option ``--one-file-system`` because rsync-system-backup
+   defaults to running rsync with ``--one-file-system`` and must be instructed
+   not to using ``--multi-fs``."
    "``-x``, ``--exclude=PATTERN``","Selectively exclude certain files from being included in the backup.
    Refer to the rsync documentation for allowed ``PATTERN`` syntax. Note that
    rsync-system-backup always uses the 'rsync ``--one-file-system``' option."

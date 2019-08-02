@@ -1,7 +1,7 @@
 # rsync-system-backup: Linux system backups powered by rsync.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 5, 2018
+# Last Change: August 2, 2019
 # URL: https://github.com/xolox/python-rsync-system-backup
 
 """
@@ -126,8 +126,10 @@ Supported options:
 
   --multi-fs
 
-    Allow rsync to cross filesystem boundaries. (has the opposite effect
-    of rsync option "-x, --one-file-system").
+    Allow rsync to cross filesystem boundaries. This option has the opposite
+    effect of the rsync option --one-file-system because rsync-system-backup
+    defaults to running rsync with --one-file-system and must be instructed
+    not to using --multi-fs.
 
   -x, --exclude=PATTERN
 
@@ -201,8 +203,8 @@ def main():
     try:
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
-            'ionice=', 'no-sudo', 'dry-run', 'exclude=', 'force',
-            'disable-notifications', 'verbose', 'quiet', 'help', 'multi-fs',
+            'ionice=', 'no-sudo', 'dry-run', 'multi-fs', 'exclude=', 'force',
+            'disable-notifications', 'verbose', 'quiet', 'help',
         ])
         for option, value in options:
             if option in ('-b', '--backup'):
