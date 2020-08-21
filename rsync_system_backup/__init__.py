@@ -202,6 +202,13 @@ class RsyncSystemBackup(PropertyManager):
         return []
 
     @lazy_property(writable=True)
+    def rsync_option(self):
+        """Pass an option directly to rsync (a string or :data:`None`)."""
+        return []
+        #return value
+        #return self.rsync_option
+
+    @lazy_property(writable=True)
     def excluded_roots(self):
         """
         A list of patterns (strings) that are excluded from the system backup.
@@ -539,6 +546,9 @@ class RsyncSystemBackup(PropertyManager):
             rsync_command.append('--hard-links')
             rsync_command.append('--numeric-ids')
             rsync_command.append('--xattrs')
+            # Append additional rsync option
+            for pattern in self.rsync_option:
+                rsync_command.append('%s' % pattern)
             # The following rsync option avoids including mounted external
             # drives like USB sticks in system backups.
             if not self.multi_fs:
