@@ -150,6 +150,10 @@ Supported options:
     system backup starts and after the backup finishes. The use of this option
     disables the notifications (notify-send will not be called at all).
 
+  --rsync_option
+
+    Pass down additional options directly to rsync.
+
   -v, --verbose
 
     Make more noise (increase logging verbosity). Can be repeated.
