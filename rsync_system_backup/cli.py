@@ -150,6 +150,10 @@ Supported options:
     system backup starts and after the backup finishes. The use of this option
     disables the notifications (notify-send will not be called at all).
 
+  --rsync-option
+
+    Pass down additional options directly to rsync.
+
   -v, --verbose
 
     Make more noise (increase logging verbosity). Can be repeated.
@@ -203,7 +207,7 @@ def main():
     try:
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 'bsrm:c:t:i:unx:fvqh', [
             'backup', 'snapshot', 'rotate', 'mount=', 'crypto=', 'tunnel=',
-            'ionice=', 'no-sudo', 'dry-run', 'multi-fs', 'exclude=', 'force',
+            'ionice=', 'no-sudo', 'dry-run', 'multi-fs', 'rsync-option=', 'exclude=', 'force',
             'disable-notifications', 'verbose', 'quiet', 'help',
         ])
         for option, value in options:
@@ -246,6 +250,9 @@ def main():
                 program_opts['exclude_list'].append(value)
             elif option == '--multi-fs':
                 program_opts['multi_fs'] = True
+            elif option == '--rsync-option':
+                program_opts.setdefault('rsync_option', [])
+                program_opts['rsync_option'].append(value)
             elif option == '--disable-notifications':
                 program_opts['notifications_enabled'] = False
             elif option in ('-v', '--verbose'):

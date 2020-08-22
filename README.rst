@@ -187,6 +187,7 @@ The backup process consists of several steps:
    ``--disable-notifications``,"By default a desktop notification is shown (using notify-send) before the
    system backup starts and after the backup finishes. The use of this option
    disables the notifications (notify-send will not be called at all)."
+   "``--rsync-option``, "Pass additional rsync option directly to rsync."
    "``-v``, ``--verbose``",Make more noise (increase logging verbosity). Can be repeated.
    "``-q``, ``--quiet``",Make less noise (decrease logging verbosity). Can be repeated.
    "``-h``, ``--help``",Show this message and exit.
